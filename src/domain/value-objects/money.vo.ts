@@ -58,10 +58,10 @@ export class Money {
 
   /**
    * Converts Money to string representation
-   * @returns String in format "amount CURRENCY"
+   * @returns String in format "amount CURRENCY" "100.00 THB"
    */
   toString(): string {
-    return `${this.amount} ${this.currency}`;
+    return `${this.amount.toFixed(2)} ${this.currency}`;
   }
 
   equals(other: Money): boolean {
