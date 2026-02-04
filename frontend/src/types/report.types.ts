@@ -35,24 +35,22 @@ export interface RevenueReport {
     fromDate: string;
     toDate: string;
     totalOrders: number;
-    totalRevenue: string;
-    totalDiscount: string;
-    totalTax: string;
-    netRevenue: string;
-    averageOrderValue: string;
+    totalRevenue: number;
+    totalDiscount: number;
+    averageDailyRevenue: number;
     dailyBreakdown: {
         date: string;
-        orders: number;
-        revenue: string;
-        discount: string;
-        netRevenue: string;
+        orderCount: number;
+        subtotal: number;
+        discount: number;
+        revenue: number;
     }[];
-    discountSummary: {
-        totalDiscountGiven: string;
-        discountPercentage: string;
-        ordersWithDiscount: number;
-        ordersWithoutDiscount: number;
-    };
+    discountUsage: {
+        discountType: string;
+        usageCount: number;
+        totalDiscountAmount: number;
+    }[];
+    currency: string;
 }
 
 /**

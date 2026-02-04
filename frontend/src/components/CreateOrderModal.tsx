@@ -105,13 +105,13 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
     onCancel();
   };
 
-  // Calculate totals
-  const TAX_RATE = 0.07; // VAT 7%
+  // Calculate totals (tax on net amount per Thailand VAT law)
+  const TAX_RATE = 0.07;
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price || '0');
     return sum + (price * item.quantity);
   }, 0);
-  const tax = subtotal * TAX_RATE;
+  const tax = subtotal * TAX_RATE; // Note: Backend will recalculate if discount applied
   const total = subtotal + tax;
 
   // Items table columns

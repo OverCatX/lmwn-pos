@@ -19,7 +19,6 @@ import {
 import {
   DollarOutlined,
   ShoppingCartOutlined,
-  PercentageOutlined,
   ReloadOutlined,
   BarChartOutlined,
   TableOutlined,
@@ -259,7 +258,7 @@ function ReportsPage() {
                       suffix="฿"
                     />
                     <Text type="secondary" style={{ fontSize: 11 }}>
-                      Subtotal + Tax - Discount
+                      (Subtotal - Discount) + Tax
                     </Text>
                   </Col>
                   <Col span={6}>
@@ -273,7 +272,7 @@ function ReportsPage() {
                         </Space>
                       }
                       value={parseFloat(dailySales.totalDiscount).toFixed(2)}
-                      prefix={<PercentageOutlined />}
+                      // prefix={<PercentageOutlined />}
                       suffix="฿"
                       valueStyle={{ color: '#ff4d4f' }}
                     />
@@ -525,7 +524,7 @@ function ReportsPage() {
 
         {/* Revenue Report */}
         <Card
-          title={`Revenue Report - ${dateRange[0].format('DD MMM')} to ${dateRange[1].format('DD MMM YYYY')}`}
+          title={`Revenue Report - ${dateRange[0].format('DD MMM')} to ${dateRange[1].format('DD MMM YYYY')} ( 7 Days )`}
         >
           <Spin spinning={isLoadingRevenue}>
             {isErrorRevenue ? (
@@ -559,7 +558,7 @@ function ReportsPage() {
                           </AntTooltip>
                         </Space>
                       }
-                      value={parseFloat(revenueReport.totalRevenue).toFixed(2)}
+                      value={revenueReport.totalRevenue.toFixed(2)}
                       suffix="฿"
                     />
                   </Col>
@@ -573,7 +572,7 @@ function ReportsPage() {
                           </AntTooltip>
                         </Space>
                       }
-                      value={parseFloat(revenueReport.totalDiscount).toFixed(2)}
+                      value={revenueReport.totalDiscount.toFixed(2)}
                       suffix="฿"
                       valueStyle={{ color: '#ff4d4f' }}
                     />
@@ -582,13 +581,13 @@ function ReportsPage() {
                     <Statistic
                       title={
                         <Space>
-                          Net Revenue
-                          <AntTooltip title="Net revenue after discount (Gross - Discount)">
+                          Avg Daily Revenue
+                          <AntTooltip title="Average revenue per day in this period">
                             <QuestionCircleOutlined style={{ color: '#999', fontSize: 12 }} />
                           </AntTooltip>
                         </Space>
                       }
-                      value={parseFloat(revenueReport.netRevenue).toFixed(2)}
+                      value={revenueReport.averageDailyRevenue.toFixed(2)}
                       prefix={<DollarOutlined />}
                       suffix="฿"
                       valueStyle={{ color: '#3f8600' }}
@@ -630,56 +629,36 @@ function ReportsPage() {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Discount Summary */}
-                {revenueReport.discountSummary && (
-                  <Row gutter={16} style={{ marginTop: 24 }}>
-                    <Col span={8}>
-                      <Statistic
-                        title={
-                          <Space>
-                            Discount Rate
-                            <AntTooltip title="Discount percentage vs Gross Revenue">
-                              <QuestionCircleOutlined style={{ color: '#999', fontSize: 12 }} />
-                            </AntTooltip>
-                          </Space>
-                        }
-                        value={parseFloat(
-                          revenueReport.discountSummary.discountPercentage
-                        ).toFixed(2)}
-                        suffix="%"
-                        valueStyle={{ color: '#ff4d4f' }}
-                      />
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        Higher = More discounts than usual
-                      </Text>
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title={
-                          <Space>
-                            Orders with Discount
-                            <AntTooltip title="Orders with discount applied">
-                              <QuestionCircleOutlined style={{ color: '#999', fontSize: 12 }} />
-                            </AntTooltip>
-                          </Space>
-                        }
-                        value={revenueReport.discountSummary.ordersWithDiscount}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title={
-                          <Space>
-                            Full Price Orders
-                            <AntTooltip title="Full price orders (no discount)">
-                              <QuestionCircleOutlined style={{ color: '#999', fontSize: 12 }} />
-                            </AntTooltip>
-                          </Space>
-                        }
-                        value={revenueReport.discountSummary.ordersWithoutDiscount}
-                      />
-                    </Col>
-                  </Row>
+                {/* Discount Usage */}
+                {revenueReport.discountUsage && revenueReport.discountUsage.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <h3>Discount Usage</h3>
+                    <Table
+                      dataSource={revenueReport.discountUsage}
+                      rowKey="discountType"
+                      pagination={false}
+                      columns={[
+                        {
+                          title: 'Discount Type',
+                          dataIndex: 'discountType',
+                          key: 'discountType',
+                        },
+                        {
+                          title: 'Times Used',
+                          dataIndex: 'usageCount',
+                          key: 'usageCount',
+                          align: 'right',
+                        },
+                        {
+                          title: 'Total Amount',
+                          dataIndex: 'totalDiscountAmount',
+                          key: 'totalDiscountAmount',
+                          align: 'right',
+                          render: (value: number) => `฿${value.toFixed(2)}`,
+                        },
+                      ]}
+                    />
+                  </div>
                 )}
               </>
             ) : !isLoadingRevenue ? (

@@ -154,7 +154,7 @@ function OrderDetail({ order, visible, onClose }: OrderDetailProps) {
             -฿{parseFloat(order.discountAmount).toFixed(2)}
           </Descriptions.Item>
         )}
-        <Descriptions.Item label="Tax (7%)">
+        <Descriptions.Item label="Tax (7% on net)">
           ฿{parseFloat(order.tax).toFixed(2)}
         </Descriptions.Item>
         <Descriptions.Item
