@@ -13,9 +13,12 @@ export const getDatabaseConfig = (
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_NAME', 'pos_db'),
-        entities: [__dirname + '/../infrastructure/database/entities/*.orm.entity{.ts,.js}'],
+        entities: [
+            __dirname + '/../infrastructure/database/order/entities/*.orm.entity{.ts,.js}',
+            __dirname + '/../infrastructure/database/product/entities/*.orm.entity{.ts,.js}',
+        ],
         migrations: [
-            __dirname + '/../infrastructure/database/migrations/*{.ts,.js}',
+            __dirname + '/../infrastructure/database/shared/migrations/*{.ts,.js}',
         ],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE', false), // false in production
         logging: configService.get<boolean>('DB_LOGGING', false),
