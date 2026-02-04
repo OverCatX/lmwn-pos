@@ -71,8 +71,14 @@ function OrdersPage() {
 
   // Fetch orders using React Query
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['orders', page, pageSize, statusFilter],
-    queryFn: () => OrdersApi.getOrders(page, pageSize, statusFilter),
+    queryKey: ['orders', page, pageSize, statusFilter, dateRange],
+    queryFn: () => OrdersApi.getOrders(
+      page, 
+      pageSize, 
+      statusFilter,
+      dateRange?.[0]?.toISOString(),
+      dateRange?.[1]?.toISOString()
+    ),
   });
 
   // Apply discount mutation
@@ -116,22 +122,12 @@ function OrdersPage() {
     },
   });
 
-  // Filter orders by search text (client-side)
-  const filteredOrders = data?.data.filter((order) => {
-    if (searchText && !order.orderNumber.toLowerCase().includes(searchText.toLowerCase())) {
-      return false;
-    }
-    if (dateRange) {
-      const orderDate = dayjs(order.createdAt);
-      if (
-        orderDate.isBefore(dateRange[0], 'day') ||
-        orderDate.isAfter(dateRange[1], 'day')
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }) || [];
+  // Search filter (client-side for order number only)
+  const displayOrders = searchText
+    ? (data?.data || []).filter((order) =>
+        order.orderNumber.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : (data?.data || []);
 
   // Handle refetch
   const handleRefresh = async () => {
@@ -423,22 +419,30 @@ function OrdersPage() {
         <Spin spinning={isLoading}>
           <Table
             columns={columns}
-            dataSource={filteredOrders}
+            dataSource={displayOrders}
             rowKey="id"
             scroll={{ x: 1400 }}
-            pagination={{
-              current: page,
-              pageSize: pageSize,
-              total: filteredOrders.length,
-              showSizeChanger: true,
-              pageSizeOptions: [10, 20, 50, 100],
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} orders`,
-              onChange: (newPage, newPageSize) => {
-                setPage(newPage);
-                setPageSize(newPageSize);
-              },
-            }}
+            pagination={
+              searchText
+                ? false
+                : {
+                    position: ['bottomCenter'],
+                    current: page,
+                    pageSize: pageSize,
+                    total: data?.total || 0,
+                    showSizeChanger: true,
+                    pageSizeOptions: ['10', '20', '50', '100'],
+                    onChange: (newPage, newPageSize) => {
+                      if (newPageSize !== pageSize) {
+                        setPageSize(newPageSize);
+                        setPage(1);
+                      } else {
+                        setPage(newPage);
+                      }
+                    },
+                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
+                  }
+            }
           />
         </Spin>
       </Card>

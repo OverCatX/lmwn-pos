@@ -20,6 +20,12 @@ export interface DailySalesSummary {
         quantitySold: number;
         revenue: string;
     }[];
+    bottomProducts: {
+        productId: string;
+        productName: string;
+        quantitySold: number;
+        revenue: string;
+    }[];
 }
 
 /**
@@ -55,13 +61,29 @@ export interface RevenueReport {
 export interface ProductPerformanceReport {
     fromDate: string;
     toDate: string;
-    totalProducts: number;
-    topPerformers: {
+    topProducts: {
         productId: string;
         productName: string;
+        category: string;
         quantitySold: number;
-        revenue: string;
+        revenue: number;
         orderCount: number;
-        percentageOfRevenue: string;
+        avgQuantityPerOrder: number;
     }[];
+    bottomProducts: {
+        productId: string;
+        productName: string;
+        category: string;
+        quantitySold: number;
+        revenue: number;
+        orderCount: number;
+        avgQuantityPerOrder: number;
+    }[];
+    categoryBreakdown: {
+        category: string;
+        revenue: number;
+        revenuePercentage: number;
+        productCount: number;
+    }[];
+    currency: string;
 }

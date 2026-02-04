@@ -13,11 +13,13 @@ export class OrdersApi {
   static async getOrders(
     page = 1,
     limit = 10,
-    status?: string
+    status?: string,
+    fromDate?: string,
+    toDate?: string
   ): Promise<PaginatedOrderResponse> {
     const response = await apiClient.get<PaginatedOrderResponse>(
       this.BASE_PATH,
-      { params: { page, limit, status } }
+      { params: { page, limit, status, fromDate, toDate } }
     );
     return response.data;
   }

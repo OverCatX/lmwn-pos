@@ -18,7 +18,7 @@ export class ReportsApi {
     static async getDailySalesSummary(date?: string): Promise<DailySalesSummary> {
         const params = date ? `?date=${date}` : '';
         const response = await apiClient.get<DailySalesSummary>(
-            `${this.BASE_PATH}/daily-sales${params}`
+            `${this.BASE_PATH}/daily-summary${params}`
         );
         return response.data;
     }
@@ -59,7 +59,7 @@ export class ReportsApi {
         }
 
         const response = await apiClient.get<ProductPerformanceReport>(
-            `${this.BASE_PATH}/product-performance?${params.toString()}`
+            `${this.BASE_PATH}/products?${params.toString()}`
         );
         return response.data;
     }
