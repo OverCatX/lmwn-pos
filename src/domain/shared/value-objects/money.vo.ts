@@ -8,6 +8,13 @@ export class Money {
     private readonly currency: string = 'THB',
   ) { }
 
+  /**
+   * Using factory method to create Money instance 
+   * because it is a value object and we need to validate the amount and currency
+   * @param amount - The amount of money
+   * @param currency - The currency of the money
+   * @returns A new Money instance
+   */
   static from(amount: number | string, currency = 'THB'): Money {
     try {
       const decimal = new Decimal(amount);

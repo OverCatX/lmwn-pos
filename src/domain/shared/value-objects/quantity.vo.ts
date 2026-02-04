@@ -1,6 +1,7 @@
 export class Quantity {
   private constructor(private readonly value: number) { }
 
+  // Factory method to create Quantity instance because it is a value object and we need to validate the value
   static from(value: number): Quantity {
     if (!Number.isInteger(value)) {
       throw new Error('Quantity must be an integer');

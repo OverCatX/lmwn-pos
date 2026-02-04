@@ -18,7 +18,7 @@ import { OrdersModule } from './modules/orders';
       load: [appConfig],
       envFilePath: ['.env.local', '.env'],
     }),
-    // TypeORM Module
+    // TypeORM Module (Singleton Pattern)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: getDatabaseConfig,
