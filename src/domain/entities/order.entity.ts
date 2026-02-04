@@ -11,7 +11,7 @@ import {
 
 /**
  * Order Entity (Aggregate Root)
- * Manages order lifecycle, items, and financial calculations
+ * Manages order lifecycle with state machine validation
  */
 export class Order {
   private readonly items: OrderItem[] = [];
@@ -21,6 +21,16 @@ export class Order {
   private readonly createdAt: Date;
   private updatedAt: Date;
   private completedAt?: Date;
+
+  // State machine: PENDING → CONFIRMED → PREPARING → READY → COMPLETED
+  private static readonly VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+    [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
+    [OrderStatus.READY]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+    [OrderStatus.COMPLETED]: [],
+    [OrderStatus.CANCELLED]: [],
+  };
 
   constructor(
     private readonly id: string,
@@ -37,34 +47,10 @@ export class Order {
     this.updatedAt = new Date();
   }
 
-  /**
-   * Factory method to create a new order
-   * @param id - Order ID
-   * @param createdBy - User/Staff who created the order
-   * @param date - Optional date for order number generation
-   * @returns New Order instance
-   */
   static create(id: string, createdBy: string, date?: Date): Order {
     const orderNumber = OrderNumber.generate(date);
     return new Order(id, orderNumber, createdBy);
   }
-
-  /**
-   * Valid state transitions for order lifecycle
-   * PENDING → CONFIRMED → PREPARING → READY → COMPLETED
-   * Any state (except COMPLETED/CANCELLED) → CANCELLED
-   */
-  private static readonly VALID_TRANSITIONS: Record<
-    OrderStatus,
-    OrderStatus[]
-  > = {
-      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-      [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
-      [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
-      [OrderStatus.READY]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
-      [OrderStatus.COMPLETED]: [], // No transitions allowed
-      [OrderStatus.CANCELLED]: [], // No transitions allowed
-    };
 
   getId(): string {
     return this.id;
@@ -110,12 +96,6 @@ export class Order {
     return this.completedAt;
   }
 
-  /**
-   * Add an item to the order
-   * @param product - Product to add
-   * @param quantity - Quantity to add
-   * @throws InvalidOrderStateException if order is completed
-   */
   addItem(product: Product, quantity: number): void {
     this.assertNotCompleted();
 
@@ -126,12 +106,6 @@ export class Order {
     this.touch();
   }
 
-  /**
-   * Remove an item from the order
-   * @param itemId - ID of the item to remove
-   * @throws OrderItemNotFoundException if item not found
-   * @throws InvalidOrderStateException if order is completed
-   */
   removeItem(itemId: string): void {
     this.assertNotCompleted();
 
@@ -144,17 +118,9 @@ export class Order {
     this.touch();
   }
 
-  /**
-   * Update order status with state transition validation
-   * @param newStatus - New status to transition to
-   * @throws InvalidOrderStateException if transition is invalid
-   */
   updateStatus(newStatus: OrderStatus): void {
     if (!this.isValidTransition(newStatus)) {
-      throw InvalidOrderStateException.invalidTransition(
-        this.status,
-        newStatus,
-      );
+      throw InvalidOrderStateException.invalidTransition(this.status, newStatus);
     }
 
     this.status = newStatus;
@@ -166,12 +132,6 @@ export class Order {
     this.touch();
   }
 
-  /**
-   * Apply discount to the order
-   * @param discount - Discount amount
-   * @throws InvalidDiscountException if discount is invalid
-   * @throws InvalidOrderStateException if order is completed
-   */
   applyDiscount(discount: Money): void {
     this.assertNotCompleted();
 
@@ -191,36 +151,23 @@ export class Order {
     this.touch();
   }
 
-  /**
-   * Check if state transition is valid
-   * @param newStatus - Target status
-   * @returns true if transition is valid
-   */
   private isValidTransition(newStatus: OrderStatus): boolean {
     const allowedTransitions = Order.VALID_TRANSITIONS[this.status] || [];
     return allowedTransitions.includes(newStatus);
   }
 
-  /**
-   * Assert that order is not completed
-   * @throws InvalidOrderStateException if order is completed
-   */
   private assertNotCompleted(): void {
     if (this.status === OrderStatus.COMPLETED) {
       throw InvalidOrderStateException.cannotModifyCompleted();
     }
   }
 
-  /**
-   * Update the updatedAt timestamp
-   */
   private touch(): void {
     this.updatedAt = new Date();
   }
 
   calculateTotals(): void {
-    const currency =
-      this.items[0]?.getUnitPrice().getCurrency() ?? this.subtotal.getCurrency();
+    const currency = this.items[0]?.getUnitPrice().getCurrency() ?? this.subtotal.getCurrency();
 
     let subtotal = Money.from(0, currency);
     for (const item of this.items) {
@@ -236,4 +183,3 @@ export class Order {
     }
   }
 }
-

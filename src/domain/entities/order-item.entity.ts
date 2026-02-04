@@ -4,9 +4,7 @@ import { Product } from './product.entity';
 import { InvalidDiscountException } from '../exceptions';
 
 /**
- * OrderItem Entity
- * Represents an item within an order
- * Snapshot of product price at the time of order
+ * OrderItem Entity - Snapshots product price at time of order
  */
 export class OrderItem {
   constructor(
@@ -17,14 +15,6 @@ export class OrderItem {
     private discountAmount: Money = Money.from(0, unitPrice.getCurrency()),
   ) { }
 
-  /**
-   * Factory method to create OrderItem from Product
-   * Snapshots the product price at creation time
-   * @param id - OrderItem ID
-   * @param product - Product entity
-   * @param quantity - Quantity to order
-   * @returns New OrderItem instance
-   */
   static fromProduct(id: string, product: Product, quantity: number): OrderItem {
     return new OrderItem(
       id,
@@ -54,19 +44,10 @@ export class OrderItem {
     return this.discountAmount;
   }
 
-  /**
-   * Change the quantity of this order item
-   * @param quantity - New quantity (must be positive)
-   */
   changeQuantity(quantity: number): void {
     this.quantity = Quantity.from(quantity);
   }
 
-  /**
-   * Set discount amount for this order item
-   * @param discount - Discount amount (must be non-negative and not exceed subtotal)
-   * @throws InvalidDiscountException if discount is invalid
-   */
   setDiscount(discount: Money): void {
     if (discount.toNumber() < 0) {
       throw InvalidDiscountException.negativeDiscount();
@@ -83,18 +64,10 @@ export class OrderItem {
     this.discountAmount = discount;
   }
 
-  /**
-   * Calculate subtotal (quantity * unit price)
-   * @returns Subtotal amount
-   */
   calculateSubtotal(): Money {
     return this.unitPrice.multiply(this.quantity.toNumber());
   }
 
-  /**
-   * Calculate total (subtotal - discount)
-   * @returns Total amount after discount
-   */
   calculateTotal(): Money {
     const subtotal = this.calculateSubtotal();
 
@@ -105,4 +78,3 @@ export class OrderItem {
     return subtotal.subtract(this.discountAmount);
   }
 }
-

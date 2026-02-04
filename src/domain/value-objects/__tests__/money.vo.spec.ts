@@ -81,7 +81,7 @@ describe('Money Value Object', () => {
       const a = Money.from(10.00);
       const b = Money.from(0.01);
       const result = a.subtract(b);
-      expect(result.toNumber()).toBe(9.99); // ✅ Accurate!
+      expect(result.toNumber()).toBe(9.99);
     });
 
     it('should not allow negative result', () => {
