@@ -18,6 +18,7 @@ export const AppDataSource = new DataSource({
     entities: [
         __dirname + '/../order/entities/*.orm.entity{.ts,.js}',
         __dirname + '/../product/entities/*.orm.entity{.ts,.js}',
+        __dirname + '/../discount/entities/*.orm.entity{.ts,.js}',
     ],
     migrations: [__dirname + '/migrations/*{.ts,.js}'],
     synchronize: false,

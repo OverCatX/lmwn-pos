@@ -16,6 +16,7 @@ export const getDatabaseConfig = (
         entities: [
             __dirname + '/../infrastructure/database/order/entities/*.orm.entity{.ts,.js}',
             __dirname + '/../infrastructure/database/product/entities/*.orm.entity{.ts,.js}',
+            __dirname + '/../infrastructure/database/discount/entities/*.orm.entity{.ts,.js}',
         ],
         migrations: [
             __dirname + '/../infrastructure/database/shared/migrations/*{.ts,.js}',
