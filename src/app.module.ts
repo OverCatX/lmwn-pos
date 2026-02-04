@@ -9,6 +9,7 @@ import appConfig from './config/app.config';
 
 // Feature Modules
 import { OrdersModule } from './modules/orders';
+import { ProductsModule } from './modules/products';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { OrdersModule } from './modules/orders';
     }),
     // Feature Modules
     OrdersModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService, HealthService],

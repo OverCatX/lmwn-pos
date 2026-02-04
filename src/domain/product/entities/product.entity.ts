@@ -12,6 +12,7 @@ export class Product {
     private category: string,
     private isActive: boolean = true,
     createdAt?: Date,
+    private description?: string,
   ) {
     if (!name?.trim()) {
       throw InvalidProductException.emptyName();
@@ -31,6 +32,10 @@ export class Product {
 
   getName(): string {
     return this.name;
+  }
+
+  getDescription(): string | undefined {
+    return this.description;
   }
 
   getPrice(): Money {
