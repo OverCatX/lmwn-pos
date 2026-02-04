@@ -1,5 +1,6 @@
 import { AppDataSource } from '../shared/data-source';
 import { seedProducts } from './product.seed';
+import { seedOrders } from './order.seed';
 
 /**
  * Main Seed Runner
@@ -13,8 +14,9 @@ async function runSeeds() {
         await AppDataSource.initialize();
         console.log('✅ Database connected\n');
 
-        // Run seed functions
+        // Run seed functions in order
         await seedProducts(AppDataSource);
+        await seedOrders(AppDataSource);
 
         console.log('\n✅ All seeds completed successfully!');
     } catch (error) {

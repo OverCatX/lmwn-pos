@@ -1,98 +1,466 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# LMWN POS Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A clean architecture backend for restaurant POS system built with NestJS, TypeScript, and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Quick Start
 
-## Description
+### Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
 
-## Project setup
+### Installation
 
 ```bash
-$ npm install
+# Install dependencies
+npm install
+
+# Create database
+createdb lmwn2026
+
+# Setup environment
+cp env.example .env
+# Edit .env and configure your database credentials
+
+# Run migrations
+npm run migration:run
+
+# Seed initial data (26 products + 100 orders)
+npm run seed
+
+# Start development server
+npm run start:dev
 ```
 
-## Compile and run the project
+Server will start on `http://localhost:8080`
+
+Swagger documentation: `http://localhost:8080/api/docs`
+
+---
+
+## Database Setup
+
+### Environment Configuration
+
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=lmwn2026
+DB_LOGGING=false
+
+# Application
+PORT=8080
+NODE_ENV=development
+```
+
+### Commands
 
 ```bash
-# development
-$ npm run start
+# Generate new migration
+npm run migration:generate -- src/infrastructure/database/migrations/MigrationName
 
-# watch mode
-$ npm run start:dev
+# Run migrations
+npm run migration:run
 
-# production mode
-$ npm run start:prod
+# Revert last migration
+npm run migration:revert
+
+# Seed database
+npm run seed
 ```
 
-## Run tests
+### Reset Database (Fresh Start)
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+dropdb lmwn2026 && createdb lmwn2026
+npm run migration:run
+npm run seed
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## API Documentation
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Base URL
+
+```
+http://localhost:8080/api/v1
+```
+
+All endpoints are versioned with `/api/v1` prefix.
+
+### Interactive Documentation
+
+Swagger UI: `http://localhost:8080/api/docs`
+
+### Endpoints Overview
+
+#### Orders API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/orders` | List orders (paginated, filterable) |
+| `GET` | `/orders/:id` | Get order details |
+| `POST` | `/orders` | Create new order |
+| `PATCH` | `/orders/:id/status` | Update order status |
+| `PATCH` | `/orders/:id/discount` | Apply/update discount |
+| `DELETE` | `/orders/:id/discount` | Remove discount |
+
+#### Products API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/products` | List all products |
+| `GET` | `/products/:id` | Get product details |
+
+#### Reports API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/reports/daily-summary` | Daily sales summary |
+| `GET` | `/reports/revenue` | Revenue report (7 days) |
+| `GET` | `/reports/products` | Product performance analysis |
+
+---
+
+## API Examples
+
+### 1. List Orders (Paginated)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+GET /api/v1/orders?page=1&limit=10&status=COMPLETED
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10)
+- `status`: Filter by status (optional)
+- `fromDate`: Start date (optional)
+- `toDate`: End date (optional)
 
-## Resources
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "orderNumber": "ORD-2026-0204-682",
+      "status": "COMPLETED",
+      "subtotal": 640.00,
+      "discountAmount": 0.00,
+      "tax": 44.80,
+      "total": 684.80,
+      "currency": "THB",
+      "createdBy": "staff-demo-001",
+      "createdAt": "2026-02-04T12:30:00Z",
+      "items": [...]
+    }
+  ],
+  "total": 100,
+  "page": 1,
+  "limit": 10
+}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 2. Create Order
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+POST /api/v1/orders
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": "uuid",
+      "quantity": 2
+    }
+  ],
+  "createdBy": "staff-001"
+}
+```
+
+**Response:** `201 Created`
+
+### 3. Apply Discount
+
+```bash
+PATCH /api/v1/orders/:id/discount
+Content-Type: application/json
+
+{
+  "discountType": "PERCENTAGE",
+  "discountValue": 10.0
+}
+```
+
+**Discount Types:**
+- `PERCENTAGE`: Value 0-100 (e.g., 10 = 10%)
+- `FIXED_AMOUNT`: Value in THB (e.g., 50.00 = ฿50)
+
+**Response:** `200 OK` with updated order
+
+### 4. Update Order Status
+
+```bash
+PATCH /api/v1/orders/:id/status
+Content-Type: application/json
+
+{
+  "status": "COMPLETED",
+  "reason": "Customer paid"
+}
+```
+
+**Valid Status Transitions:**
+```
+PENDING → CONFIRMED → PREPARING → READY → COMPLETED
+        ↓            ↓           ↓      ↓
+        └────────────┴───────────┴──────┴─→ CANCELLED
+```
+
+### 5. Get Daily Sales Summary
+
+```bash
+GET /api/v1/reports/daily-summary?date=2026-02-04
+```
+
+**Response:**
+```json
+{
+  "date": "2026-02-04",
+  "totalOrders": 5,
+  "totalSubtotal": 2500.00,
+  "totalDiscount": 250.00,
+  "totalTax": 157.50,
+  "totalRevenue": 2407.50,
+  "averageOrderValue": 481.50,
+  "ordersByStatus": [...],
+  "topProducts": [...]
+}
+```
+
+### 6. Get Revenue Report
+
+```bash
+GET /api/v1/reports/revenue?fromDate=2026-01-29&toDate=2026-02-04
+```
+
+**Response:**
+```json
+{
+  "totalRevenue": 56000.00,
+  "totalOrders": 100,
+  "totalDiscount": 2800.00,
+  "totalTax": 3920.00,
+  "averageDailyRevenue": 8000.00,
+  "averageOrderValue": 560.00,
+  "discountUsage": [
+    {
+      "type": "PERCENTAGE",
+      "ordersCount": 15,
+      "totalDiscount": 1500.00
+    }
+  ]
+}
+```
+
+### 7. Get Product Performance
+
+```bash
+GET /api/v1/reports/products?fromDate=2026-01-29&toDate=2026-02-04&limit=10
+```
+
+**Response:**
+```json
+{
+  "topProducts": [
+    {
+      "productId": "uuid",
+      "productName": "Bird Nest Soup",
+      "totalRevenue": 5000.00,
+      "totalQuantity": 10,
+      "orderCount": 8,
+      "avgQuantityPerOrder": 1.25
+    }
+  ],
+  "bottomProducts": [...],
+  "categoryBreakdown": [...]
+}
+```
+
+---
+
+## Error Handling
+
+All endpoints return consistent error responses:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "error": "Bad Request",
+  "timestamp": "2026-02-04T12:00:00.000Z",
+  "path": "/api/v1/orders"
+}
+```
+
+**Common Status Codes:**
+- `200`: Success
+- `201`: Created
+- `400`: Bad Request (validation error)
+- `404`: Not Found
+- `409`: Conflict (business rule violation)
+- `500`: Internal Server Error
+
+---
+
+## Architecture
+
+```
+src/
+├── domain/              # Business logic (entities, value objects)
+│   ├── order/          # Order aggregate
+│   ├── product/        # Product aggregate
+│   ├── discount/       # Discount domain
+│   └── shared/         # Shared domain logic
+├── application/         # Use cases and DTOs
+│   ├── orders/
+│   ├── products/
+│   └── reports/
+├── infrastructure/      # External dependencies
+│   ├── database/       # TypeORM, repositories, migrations
+│   └── logging/        # Audit logs
+└── presentation/        # HTTP layer (controllers)
+    └── controllers/
+```
+
+**Key Features:**
+- Clean Architecture with DDD principles
+- Feature-first organization (Bounded Contexts)
+- Financial accuracy with `decimal.js`
+- Audit logging for all transactions
+- Type-safe with strict TypeScript
+- API versioning (v1)
+
+---
+
+## Development
+
+```bash
+# Start in watch mode
+npm run start:dev
+
+# Build
+npm run build
+
+# Start production
+npm run start:prod
+
+# Type check
+npm run build
+
+# Lint
+npm run lint
+```
+
+---
+
+## Testing
+
+### Check Database Connection
+
+```bash
+curl http://localhost:8080/api/v1/health/db
+```
+
+### Test API with Swagger
+
+1. Open `http://localhost:8080/api/docs`
+2. Click "Try it out" on any endpoint
+3. Fill in parameters
+4. Execute and see response
+
+### Test Order Creation Flow
+
+```bash
+# 1. Get products
+curl http://localhost:8080/api/v1/products
+
+# 2. Create order
+curl -X POST http://localhost:8080/api/v1/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [{"productId": "...", "quantity": 2}],
+    "createdBy": "test-staff"
+  }'
+
+# 3. Apply discount
+curl -X PATCH http://localhost:8080/api/v1/orders/{orderId}/discount \
+  -H "Content-Type: application/json" \
+  -d '{"discountType": "PERCENTAGE", "discountValue": 10}'
+```
+
+---
+
+## Financial Accuracy
+
+The system ensures accurate financial calculations:
+
+- **Tax**: 7% VAT applied on net amount (after discount)
+- **Calculation**: `Total = (Subtotal - Discount) × 1.07`
+- **Precision**: All monetary values use `DECIMAL(10,2)` in database
+- **Library**: `decimal.js` prevents floating-point errors
+
+**Example:**
+```
+Subtotal:  ฿1,000.00
+Discount:  ฿100.00 (10%)
+Net:       ฿900.00
+Tax (7%):  ฿63.00
+Total:     ฿963.00
+```
+
+---
+
+## Audit Logging
+
+All significant actions are automatically logged to `audit_logs` table:
+
+- Order creation
+- Status changes
+- Discount applications/removals
+- Includes: who, when, what changed
+
+Query audit logs:
+
+```sql
+SELECT * FROM audit_logs 
+WHERE entity_id = 'order-uuid' 
+ORDER BY changed_at DESC;
+```
+
+---
+
+## Tech Stack
+
+- **Framework**: NestJS 10
+- **Language**: TypeScript 5
+- **Database**: PostgreSQL 14
+- **ORM**: TypeORM 0.3
+- **Validation**: class-validator
+- **Documentation**: Swagger/OpenAPI
+- **Precision Math**: decimal.js
+- **Testing**: Jest
+
+---
 
 ## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+For issues or questions, check:
+- Swagger documentation: `http://localhost:8080/api/docs`
+- Source code comments
+- Main project README: `../README.md`
