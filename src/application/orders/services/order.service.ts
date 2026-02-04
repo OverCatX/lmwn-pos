@@ -21,17 +21,25 @@ import { OrderDtoMapper } from '../mappers';
 import {
   InvalidOrderStateException,
   OrderItemNotFoundException,
+  InvalidOrderStateTransitionException,
 } from '../../../domain/order';
-import { InvalidDiscountException } from '../../../domain/discount';
+import { InvalidDiscountException, DiscountCalculator } from '../../../domain/discount';
+import { OrderStateMachine } from '../../../domain/order';
 
 @Injectable()
 export class OrderService {
+  private readonly discountCalculator: DiscountCalculator;
+  private readonly orderStateMachine: OrderStateMachine;
+
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
     @Inject('IProductRepository')
     private readonly productRepository: IProductRepository,
-  ) { }
+  ) {
+    this.discountCalculator = new DiscountCalculator();
+    this.orderStateMachine = new OrderStateMachine();
+  }
 
   async createOrder(dto: CreateOrderDto): Promise<OrderResponseDto> {
     try {
@@ -69,13 +77,30 @@ export class OrderService {
     }
   }
 
+  /**
+   * Update order status with state machine validation
+   * @param id - Order ID
+   * @param dto - Update status DTO
+   * @returns Updated order
+   */
   async updateOrderStatus(
     id: string,
     dto: UpdateOrderStatusDto,
   ): Promise<OrderResponseDto> {
     try {
       const order = await this.findOrderById(id);
+
+      // Validate state transition using OrderStateMachine
+      this.orderStateMachine.validateTransition(order, dto.status);
+
+      // Update status
       order.updateStatus(dto.status);
+
+      // TODO: Log state change for audit trail (reason included if provided)
+      if (dto.reason) {
+        console.log(`Order ${id} status changed to ${dto.status}. Reason: ${dto.reason}`);
+      }
+
       const updated = await this.orderRepository.update(order);
       return OrderDtoMapper.toResponseDto(updated);
     } catch (error) {
@@ -83,16 +108,51 @@ export class OrderService {
     }
   }
 
+  /**
+   * Apply discount to order using DiscountCalculator
+   * @param id - Order ID
+   * @param dto - Apply discount DTO
+   * @returns Updated order
+   */
   async applyDiscount(
     id: string,
     dto: ApplyDiscountDto,
   ): Promise<OrderResponseDto> {
     try {
       const order = await this.findOrderById(id);
-      const currency = order.getSubtotal().getCurrency();
-      const discount = Money.from(dto.discountAmount, currency);
+      const subtotal = order.getSubtotal();
 
-      order.applyDiscount(discount);
+      // Calculate discount using DiscountCalculator
+      let discountAmount: Money;
+
+      if (dto.discountType === 'PERCENTAGE') {
+        const maxDiscount = dto.maxDiscount
+          ? Money.from(dto.maxDiscount, subtotal.getCurrency())
+          : undefined;
+
+        discountAmount = this.discountCalculator.calculatePercentageDiscount(
+          subtotal,
+          dto.discountValue,
+          maxDiscount,
+        );
+      } else if (dto.discountType === 'FIXED_AMOUNT') {
+        const fixedAmount = Money.from(dto.discountValue, subtotal.getCurrency());
+        discountAmount = this.discountCalculator.calculateFixedDiscount(
+          subtotal,
+          fixedAmount,
+        );
+      } else {
+        throw new BadRequestException(`Unsupported discount type: ${dto.discountType}`);
+      }
+
+      // Apply calculated discount to order
+      order.applyDiscount(discountAmount);
+
+      // TODO: Log discount application for audit trail
+      console.log(
+        `Applied ${dto.discountType} discount of ${dto.discountValue} to order ${id}. ` +
+        `Discount amount: ${discountAmount.toNumber()}`,
+      );
 
       const updated = await this.orderRepository.update(order);
       return OrderDtoMapper.toResponseDto(updated);
@@ -170,12 +230,16 @@ export class OrderService {
   }
 
   /**
-   * Handle domain errors
+   * Handle domain errors and map to appropriate HTTP exceptions
    * @param error - The error
    * @returns A never
    */
   private handleDomainError(error: unknown): never {
     if (error instanceof InvalidOrderStateException) {
+      throw new BadRequestException(error.message);
+    }
+
+    if (error instanceof InvalidOrderStateTransitionException) {
       throw new BadRequestException(error.message);
     }
 
@@ -194,7 +258,12 @@ export class OrderService {
       throw error;
     }
 
-    console.error('OrderService error:', error);
-    throw new BadRequestException('An error occurred while processing the order');
+    if (error instanceof Error) {
+      console.error('OrderService error:', error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
+
+    console.error('OrderService unknown error:', error);
+    throw new BadRequestException('An unknown error occurred while processing the order');
   }
 }
