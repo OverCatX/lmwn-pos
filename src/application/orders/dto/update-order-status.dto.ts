@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
-import { OrderStatus } from '../../../domain/enums/order-status.enum';
+import { OrderStatus } from '../../../domain/order';
 
 /**
  * Update Order Status DTO

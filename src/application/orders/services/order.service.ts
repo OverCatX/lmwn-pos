@@ -4,11 +4,11 @@ import {
   BadRequestException,
   Inject,
 } from '@nestjs/common';
-import { Order } from '../../../domain/entities/order.entity';
-import { Money } from '../../../domain/value-objects/money.vo';
-import { OrderNumber } from '../../../domain/value-objects/order-number.vo';
-import { IOrderRepository } from '../../../domain/repositories/order.repository.interface';
-import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
+import { Order } from '../../../domain/order';
+import { Money } from '../../../domain/shared';
+import { OrderNumber } from '../../../domain/order';
+import { IOrderRepository } from '../../../domain/order';
+import { IProductRepository } from '../../../domain/product';
 import {
   CreateOrderDto,
   OrderResponseDto,
@@ -20,9 +20,9 @@ import {
 import { OrderDtoMapper } from '../mappers';
 import {
   InvalidOrderStateException,
-  InvalidDiscountException,
   OrderItemNotFoundException,
-} from '../../../domain/exceptions';
+} from '../../../domain/order';
+import { InvalidDiscountException } from '../../../domain/discount';
 
 @Injectable()
 export class OrderService {

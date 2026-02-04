@@ -7,18 +7,18 @@ import { OrdersController } from '../../presentation/controllers/orders';
 // Application
 import { OrderService } from '../../application/orders/services';
 
-// Infrastructures
+// Infrastructures - Order Context
 import {
     OrderOrmEntity,
     OrderItemOrmEntity,
-    ProductOrmEntity,
-} from '../../infrastructure/database/entities';
-
-// Repositories (Infra)
-import {
     OrderRepository,
+} from '../../infrastructure/database/order';
+
+// Infrastructures - Product Context
+import {
+    ProductOrmEntity,
     ProductRepository,
-} from '../../infrastructure/database/repositories';
+} from '../../infrastructure/database/product';
 
 // Domain - Repository Interfaces
 

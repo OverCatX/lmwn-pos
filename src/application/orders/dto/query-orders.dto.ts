@@ -1,6 +1,6 @@
 import { IsOptional, IsEnum, IsInt, Min, IsDateString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderStatus } from '../../../domain/enums/order-status.enum';
+import { OrderStatus } from '../../../domain/order';
 
 /**
  * Query Orders DTO

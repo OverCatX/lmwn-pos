@@ -1,4 +1,4 @@
-import { OrderStatus } from '../../../domain/enums/order-status.enum';
+import { OrderStatus } from '../../../domain/order';
 import { OrderItemResponseDto } from './order-item.dto';
 
 /**

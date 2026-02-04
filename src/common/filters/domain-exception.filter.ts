@@ -5,13 +5,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { DomainException } from '../../domain/exceptions/domain.exception';
+import { DomainException } from '../../domain/shared';
 import {
   InvalidOrderStateException,
-  InvalidDiscountException,
+  InvalidOrderStateTransitionException,
   OrderItemNotFoundException,
-  InvalidProductException,
-} from '../../domain/exceptions';
+} from '../../domain/order';
+import { InvalidDiscountException } from '../../domain/discount';
+import { InvalidProductException } from '../../domain/product';
 
 /**
  * Global Exception Filter to catch domain exceptions and convert them to HTTP responses
@@ -43,6 +44,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
     // Business rule violations (400 Bad Request)
     if (
       exception instanceof InvalidOrderStateException ||
+      exception instanceof InvalidOrderStateTransitionException ||
       exception instanceof InvalidDiscountException ||
       exception instanceof InvalidProductException
     ) {
