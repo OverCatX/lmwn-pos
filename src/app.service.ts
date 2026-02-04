@@ -6,7 +6,7 @@ export class AppService {
   constructor(private readonly healthService: HealthService) { }
 
   getHello(): string {
-    return 'Hello World!';
+    return 'Hello JUNIOR LINE MAN WONGNAI 2026!';
   }
 
   async checkDatabase() {
