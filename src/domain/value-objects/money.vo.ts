@@ -1,23 +1,34 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import Decimal from 'decimal.js';
 export class Money {
   private constructor(
-    private readonly amount: number,
+    private readonly amount: decimal.Decimal,
     private readonly currency: string = 'THB',
   ) { }
 
-  // Factory Method use for creates a Money VO.(Value Object) with normalization and validation 
-  // Use instead of calling constructor directly
   static from(amount: number | string, currency = 'THB'): Money {
-    const numericAmount = typeof amount === 'string' ? Number(amount) : amount;
+    try {
+      const decimal = new Decimal(amount);
 
-    if (Number.isNaN(numericAmount)) {
-      throw new Error('Money amount must be a valid number');
+      if (decimal.isNaN()) {
+        throw new Error('Money amount must be a valid number');
+      }
+
+      if (decimal.isNegative()) {
+        throw new Error('Money amount cannot be negative');
+      }
+
+      const rounded = decimal.toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+      return new Money(rounded, currency);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Invalid money amount: ${error.message}`);
+      }
+      throw error;
     }
-
-    if (numericAmount < 0) {
-      throw new Error('Money amount cannot be negative');
-    }
-
-    return new Money(Number(numericAmount.toFixed(2)), currency);
   }
 
   getCurrency(): string {
@@ -25,52 +36,58 @@ export class Money {
   }
 
   add(other: Money): Money {
-    this.assertSameCurrency(other); // Check match currency
-    const result = this.amount + other.amount;
-    return new Money(Number(result.toFixed(2)), this.currency);
+    this.assertSameCurrency(other);
+    const result = this.amount.plus(other.amount);
+    return new Money(result.toDecimalPlaces(2, Decimal.ROUND_HALF_UP), this.currency);
   }
 
   subtract(other: Money): Money {
-    this.assertSameCurrency(other); // Check match currency
-    const result = this.amount - other.amount;
-    if (result < 0) {
-      throw new Error('Result cannot be negative');
+    this.assertSameCurrency(other);
+    const result = this.amount.minus(other.amount);
+
+    if (result.isNegative()) {
+      throw new Error('Subtraction result cannot be negative');
     }
-    return new Money(Number(result.toFixed(2)), this.currency);
+
+    return new Money(result.toDecimalPlaces(2, Decimal.ROUND_HALF_UP), this.currency);
   }
 
   multiply(factor: number): Money {
     if (factor < 0) {
-      throw new Error('Factor cannot be negative');
+      throw new Error('Multiplication factor cannot be negative');
     }
-    const result = this.amount * factor;
-    return new Money(Number(result.toFixed(2)), this.currency);
+
+    const result = this.amount.times(factor);
+    return new Money(result.toDecimalPlaces(2, Decimal.ROUND_HALF_UP), this.currency);
   }
 
-  /**
-   * Converts Money value object to primitive number
-   * Use this for calculations, comparisons, or when primitive type is needed
-   * @returns The numeric amount value
-   */
   toNumber(): number {
-    return this.amount;
+    return this.amount.toNumber();
   }
 
-  /**
-   * Converts Money to string representation
-   * @returns String in format "amount CURRENCY" "100.00 THB"
-   */
   toString(): string {
     return `${this.amount.toFixed(2)} ${this.currency}`;
   }
 
   equals(other: Money): boolean {
-    return this.currency === other.currency && this.amount === other.amount;
+    return this.currency === other.currency && this.amount.equals(other.amount);
+  }
+
+  greaterThan(other: Money): boolean {
+    this.assertSameCurrency(other);
+    return this.amount.greaterThan(other.amount);
+  }
+
+  lessThan(other: Money): boolean {
+    this.assertSameCurrency(other);
+    return this.amount.lessThan(other.amount);
   }
 
   private assertSameCurrency(other: Money): void {
     if (this.currency !== other.currency) {
-      throw new Error('Currency mismatch');
+      throw new Error(
+        `Currency mismatch: Cannot operate on ${this.currency} and ${other.currency}`,
+      );
     }
   }
 }

@@ -1,11 +1,6 @@
 export class Quantity {
   private constructor(private readonly value: number) { }
 
-  /**
-   * Factory method creates a Quantity VO with validation
-   * @param value - Must be a positive integer
-   * @returns Quantity value object
-   */
   static from(value: number): Quantity {
     if (!Number.isInteger(value)) {
       throw new Error('Quantity must be an integer');
@@ -18,19 +13,10 @@ export class Quantity {
     return new Quantity(value);
   }
 
-  /**
-   * Converts Quantity value object to primitive number
-   * Use this for calculations or when primitive type is needed
-   * @returns The numeric quantity value
-   */
   toNumber(): number {
     return this.value;
   }
 
-  /**
-   * Converts Quantity to string representation
-   * @returns String representation of quantity
-   */
   toString(): string {
     return this.value.toString();
   }
@@ -66,4 +52,3 @@ export class Quantity {
     return this.value < other.value;
   }
 }
-
