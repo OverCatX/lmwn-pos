@@ -23,7 +23,7 @@ import {
   OrderItemNotFoundException,
   InvalidOrderStateTransitionException,
 } from '../../../domain/order';
-import { InvalidDiscountException, DiscountCalculator } from '../../../domain/discount';
+import { InvalidDiscountException, DiscountCalculator, DiscountType } from '../../../domain/discount';
 import { OrderStateMachine } from '../../../domain/order';
 
 @Injectable()
@@ -125,7 +125,7 @@ export class OrderService {
       // Calculate discount using DiscountCalculator
       let discountAmount: Money;
 
-      if (dto.discountType === 'PERCENTAGE') {
+      if (dto.discountType === DiscountType.PERCENTAGE) { //use enum
         const maxDiscount = dto.maxDiscount
           ? Money.from(dto.maxDiscount, subtotal.getCurrency())
           : undefined;
@@ -135,7 +135,7 @@ export class OrderService {
           dto.discountValue,
           maxDiscount,
         );
-      } else if (dto.discountType === 'FIXED_AMOUNT') {
+      } else if (dto.discountType === DiscountType.FIXED_AMOUNT) {
         const fixedAmount = Money.from(dto.discountValue, subtotal.getCurrency());
         discountAmount = this.discountCalculator.calculateFixedDiscount(
           subtotal,

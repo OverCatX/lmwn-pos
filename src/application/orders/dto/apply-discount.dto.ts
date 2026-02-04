@@ -31,7 +31,7 @@ export class ApplyDiscountDto {
 
   @IsNumber({}, { message: 'Discount value must be a number' })
   @Min(0, { message: 'Discount value must be non-negative' })
-  @ValidateIf((o) => o.discountType === DiscountType.PERCENTAGE)
+  @ValidateIf((o: ApplyDiscountDto) => o.discountType === DiscountType.PERCENTAGE)
   @Max(100, { message: 'Percentage discount cannot exceed 100%' })
   discountValue: number;
 

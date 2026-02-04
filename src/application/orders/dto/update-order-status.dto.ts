@@ -15,7 +15,7 @@ export class UpdateOrderStatusDto {
 
   @IsOptional()
   @IsString()
-  @ValidateIf((o) => o.status === OrderStatus.CANCELLED)
+  @ValidateIf((o: UpdateOrderStatusDto) => o.status === OrderStatus.CANCELLED)
   @IsNotEmpty({ message: 'Reason is required when cancelling an order' })
   reason?: string;
 }
