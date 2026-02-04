@@ -139,7 +139,16 @@ function OrderDetail({ order, visible, onClose }: OrderDetailProps) {
         </Descriptions.Item>
         {parseFloat(order.discountAmount) > 0 && (
           <Descriptions.Item
-            label="Discount"
+            label={
+              <span>
+                Discount
+                {order.discountAppliedAt && (
+                  <div style={{ fontSize: 11, color: '#999', fontWeight: 'normal' }}>
+                    Applied: {dayjs(order.discountAppliedAt).format('DD/MM/YYYY HH:mm')}
+                  </div>
+                )}
+              </span>
+            }
             contentStyle={{ color: '#ff4d4f', textAlign: 'right', fontWeight: 500 }}
           >
             -฿{parseFloat(order.discountAmount).toFixed(2)}

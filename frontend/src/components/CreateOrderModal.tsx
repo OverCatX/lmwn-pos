@@ -65,6 +65,13 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
     setItems(items.filter(item => item.key !== key));
   };
 
+  const handleQuantityChange = (key: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    setItems(items.map(item => 
+      item.key === key ? { ...item, quantity: newQuantity } : item
+    ));
+  };
+
   const handleSubmit = async () => {
     if (items.length === 0) {
       message.warning('Please add at least one item');
@@ -99,10 +106,13 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
   };
 
   // Calculate totals
+  const TAX_RATE = 0.07; // VAT 7%
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price || '0');
     return sum + (price * item.quantity);
   }, 0);
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax;
 
   // Items table columns
   const columns: ColumnsType<OrderItemForm> = [
@@ -123,8 +133,18 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
       title: 'Quantity',
       dataIndex: 'quantity',
       key: 'quantity',
-      width: 100,
+      width: 150,
       align: 'center',
+      render: (value: number, record) => (
+        <InputNumber
+          min={1}
+          max={100}
+          precision={0}
+          value={value}
+          onChange={(newValue) => handleQuantityChange(record.key, newValue || 1)}
+          style={{ width: 80 }}
+        />
+      ),
     },
     {
       title: 'Subtotal',
@@ -188,7 +208,7 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
           label="Quantity"
           initialValue={1}
         >
-          <InputNumber min={1} max={100} style={{ width: 100 }} />
+          <InputNumber min={1} max={100} precision={0} style={{ width: 100 }} />
         </Form.Item>
 
         <Form.Item>
@@ -216,10 +236,16 @@ function CreateOrderModal({ visible, onSubmit, onCancel }: CreateOrderModalProps
         <div style={{ marginTop: 16, textAlign: 'right' }}>
           <Space direction="vertical" size={4} style={{ alignItems: 'flex-end' }}>
             <div>
-              <strong>Subtotal:</strong> <span style={{ fontSize: 16, color: '#3f8600' }}>฿{subtotal.toFixed(2)}</span>
+              <strong>Subtotal:</strong> <span style={{ fontSize: 14 }}>฿{subtotal.toFixed(2)}</span>
             </div>
-            <div style={{ fontSize: 12, color: '#666' }}>
-              (Tax and discounts can be applied after order creation)
+            <div>
+              <strong>Tax (7%):</strong> <span style={{ fontSize: 14 }}>฿{tax.toFixed(2)}</span>
+            </div>
+            <div style={{ borderTop: '1px solid #d9d9d9', paddingTop: 8, marginTop: 4 }}>
+              <strong>Total:</strong> <span style={{ fontSize: 18, color: '#3f8600', fontWeight: 'bold' }}>฿{total.toFixed(2)}</span>
+            </div>
+            <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+              (Discounts can be applied after order creation)
             </div>
           </Space>
         </div>

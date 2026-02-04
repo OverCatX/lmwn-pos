@@ -187,7 +187,16 @@ function OrdersPage() {
     }
   };
 
-  // Handle create order
+  const handleRemoveDiscount = async (order: Order) => {
+    try {
+      await OrdersApi.removeDiscount(order.id);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      message.success('Discount removed successfully');
+    } catch (err) {
+      message.error(handleApiError(err));
+    }
+  };
+
   const handleCreateOrder = async (data: any) => {
     await createOrderMutation.mutateAsync(data);
   };
@@ -231,14 +240,21 @@ function OrdersPage() {
       title: 'Discount',
       dataIndex: 'discountAmount',
       key: 'discountAmount',
-      width: 120,
+      width: 150,
       align: 'right',
-      render: (value: string) => {
+      render: (value: string, record: Order) => {
         const amount = parseFloat(value);
-        return amount > 0 ? (
-          <span style={{ color: '#ff4d4f' }}>-฿{amount.toFixed(2)}</span>
-        ) : (
-          '-'
+        if (amount === 0) return '-';
+        
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ color: '#ff4d4f' }}>-฿{amount.toFixed(2)}</span>
+            {record.discountAppliedAt && (
+              <span style={{ fontSize: 11, color: '#999' }}>
+                {dayjs(record.discountAppliedAt).format('DD/MM HH:mm')}
+              </span>
+            )}
+          </div>
         );
       },
     },
@@ -286,6 +302,8 @@ function OrdersPage() {
           record.status !== OrderStatus.COMPLETED &&
           record.status !== OrderStatus.CANCELLED;
 
+        const hasDiscount = parseFloat(record.discountAmount) > 0;
+
         const menuItems: MenuProps['items'] = [
           {
             key: 'view',
@@ -304,9 +322,16 @@ function OrdersPage() {
                 {
                   key: 'discount',
                   icon: <GiftOutlined />,
-                  label: 'Apply Discount',
+                  label: hasDiscount ? 'Change Discount' : 'Apply Discount',
                   onClick: () => handleApplyDiscountClick(record),
                 },
+                ...(hasDiscount ? [{
+                  key: 'remove-discount',
+                  icon: <GiftOutlined />,
+                  label: 'Remove Discount',
+                  danger: true,
+                  onClick: () => handleRemoveDiscount(record),
+                }] : []),
               ]
             : []),
         ];

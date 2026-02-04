@@ -42,6 +42,7 @@ export interface Order {
     items: OrderItem[];
     subtotal: string;
     discountAmount: string;
+    discountAppliedAt?: string | null;
     tax: string;
     total: string;
     createdBy?: string;
