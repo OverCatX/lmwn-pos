@@ -20,6 +20,10 @@ import {
     ProductRepository,
 } from '../../infrastructure/database/product';
 
+// Infrastructures - Shared (Audit)
+import { AuditLogOrmEntity } from '../../infrastructure/database/shared/entities/audit-log.orm.entity';
+import { AuditService } from '../../infrastructure/logging';
+
 // Domain - Repository Interfaces
 
 
@@ -34,12 +38,16 @@ import {
             OrderOrmEntity,
             OrderItemOrmEntity,
             ProductOrmEntity,
+            AuditLogOrmEntity,
         ]),
     ],
     controllers: [OrdersController],
     providers: [
         // Services (Application)
         OrderService,
+
+        // Services (Infrastructure)
+        AuditService,
 
         // Repositories (Infra)
         {

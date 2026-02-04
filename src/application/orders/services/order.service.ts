@@ -25,6 +25,7 @@ import {
 } from '../../../domain/order';
 import { InvalidDiscountException, DiscountCalculator, DiscountType } from '../../../domain/discount';
 import { OrderStateMachine } from '../../../domain/order';
+import { AuditService } from '../../../infrastructure/logging';
 
 @Injectable()
 export class OrderService {
@@ -36,6 +37,7 @@ export class OrderService {
     private readonly orderRepository: IOrderRepository,
     @Inject('IProductRepository')
     private readonly productRepository: IProductRepository,
+    private readonly auditService: AuditService,
   ) {
     this.discountCalculator = new DiscountCalculator();
     this.orderStateMachine = new OrderStateMachine();
@@ -70,7 +72,22 @@ export class OrderService {
         order.addItem(product, itemDto.quantity); // Add item to order
       }
 
-      const savedOrder = await this.orderRepository.save(order); // Save order
+      const savedOrder = await this.orderRepository.save(order);
+
+      // Log order creation for audit trail (Type-safe)
+      await this.auditService.logOrderCreated(
+        savedOrder.getId(),
+        {
+          orderNumber: savedOrder.getOrderNumber().toString(),
+          status: savedOrder.getStatus(),
+          itemsCount: savedOrder.getItems().length,
+          total: savedOrder.getTotal().toNumber(),
+          subtotal: savedOrder.getSubtotal().toNumber(),
+          tax: 0, // Tax calculation not yet implemented
+        },
+        dto.createdBy,
+      );
+
       return OrderDtoMapper.toResponseDto(savedOrder);
     } catch (error) {
       this.handleDomainError(error);
@@ -89,6 +106,7 @@ export class OrderService {
   ): Promise<OrderResponseDto> {
     try {
       const order = await this.findOrderById(id);
+      const oldStatus = order.getStatus();
 
       // Validate state transition using OrderStateMachine
       this.orderStateMachine.validateTransition(order, dto.status);
@@ -96,12 +114,17 @@ export class OrderService {
       // Update status
       order.updateStatus(dto.status);
 
-      // TODO: Log state change for audit trail (reason included if provided)
-      if (dto.reason) {
-        console.log(`Order ${id} status changed to ${dto.status}. Reason: ${dto.reason}`);
-      }
-
       const updated = await this.orderRepository.update(order);
+
+      // Log status change for audit trail
+      await this.auditService.logOrderStatusChange(
+        id,
+        oldStatus,
+        dto.status,
+        updated.getCreatedBy(), // Use order's createdBy for now (TODO: use actual user)
+        dto.reason,
+      );
+
       return OrderDtoMapper.toResponseDto(updated);
     } catch (error) {
       this.handleDomainError(error);
@@ -148,13 +171,17 @@ export class OrderService {
       // Apply calculated discount to order
       order.applyDiscount(discountAmount);
 
-      // TODO: Log discount application for audit trail
-      console.log(
-        `Applied ${dto.discountType} discount of ${dto.discountValue} to order ${id}. ` +
-        `Discount amount: ${discountAmount.toNumber()}`,
+      const updated = await this.orderRepository.update(order);
+
+      // Log discount application for audit trail
+      await this.auditService.logDiscountApplied(
+        id,
+        dto.discountType,
+        dto.discountValue,
+        discountAmount.toNumber(),
+        updated.getCreatedBy(), // Use order's createdBy for now (TODO: use actual user)
       );
 
-      const updated = await this.orderRepository.update(order);
       return OrderDtoMapper.toResponseDto(updated);
     } catch (error) {
       this.handleDomainError(error);
