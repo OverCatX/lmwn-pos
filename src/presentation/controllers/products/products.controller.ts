@@ -16,7 +16,7 @@ import {
 import {
     ApiGetAllProducts,
     ApiGetProductById,
-} from '../../../common/decorators';
+} from 'src/common/decorators';
 
 /**
  * Products Controller

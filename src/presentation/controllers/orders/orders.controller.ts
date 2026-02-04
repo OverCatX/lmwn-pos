@@ -27,9 +27,9 @@ import {
     ApiGetAllOrders,
     ApiGetOrderById,
     ApiUpdateOrderStatus,
-    ApiApplyDiscount,
-    ApiDeleteOrder,
-} from '../../../common/decorators';
+    ApiApplyDiscount, ApiDeleteOrder
+} from 'src/common/decorators';
+
 
 @ApiTags('Orders')
 @Controller('orders')

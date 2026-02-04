@@ -18,6 +18,11 @@ async function bootstrap() {
       },
     }),
   );
+
+  // Set global prefix BEFORE Swagger setup
+  const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
+  app.setGlobalPrefix(apiPrefix);
+
   const config = new DocumentBuilder()
     .setTitle('POS System API')
     .setDescription('LMWN 2026 POS System - Backend API Documentation')
@@ -33,9 +38,6 @@ async function bootstrap() {
     customSiteTitle: 'POS API Docs',
     customCss: '.swagger-ui .topbar { display: none }',
   });
-
-  const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
-  app.setGlobalPrefix(apiPrefix);
 
   const port = configService.get<number>('app.port', 3000);
   await app.listen(port);
