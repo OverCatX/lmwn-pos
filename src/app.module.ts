@@ -7,6 +7,9 @@ import { HealthService } from './common/health/health.service';
 import { getDatabaseConfig } from './config/database.config';
 import appConfig from './config/app.config';
 
+// Feature Modules
+import { OrdersModule } from './modules/orders';
+
 @Module({
   imports: [
     // Configuration Module
@@ -21,6 +24,8 @@ import appConfig from './config/app.config';
       useFactory: getDatabaseConfig,
       inject: [ConfigService],
     }),
+    // Feature Modules
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService, HealthService],
