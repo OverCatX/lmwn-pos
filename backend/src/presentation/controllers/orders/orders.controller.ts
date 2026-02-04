@@ -12,7 +12,7 @@ import {
     UseFilters,
     ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OrderService } from '../../../application/orders/services';
 import {
     CreateOrderDto,
@@ -29,7 +29,6 @@ import {
     ApiGetOrderById,
     ApiUpdateOrderStatus,
     ApiApplyDiscount,
-    ApiDeleteOrder,
 } from '../../../common/decorators';
 
 @ApiTags('Orders')
@@ -86,15 +85,9 @@ export class OrdersController {
         return await this.orderService.updateOrderStatus(id, dto);
     }
 
-    /**
-     * Apply discount to order
-     * @param id - Order unique identifier
-     * @param dto - Discount data
-     * @returns Order details
-     */
     @Patch(':id/discount')
     @HttpCode(HttpStatus.OK)
-    @ApiApplyDiscount() //Swagger decoratorr
+    @ApiApplyDiscount()
     async applyDiscount(
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: ApplyDiscountDto,
@@ -102,11 +95,32 @@ export class OrdersController {
         return await this.orderService.applyDiscount(id, dto);
     }
 
-    //Delete order by ID
-    @Delete(':id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiDeleteOrder() //Swagger decoratorr
-    async deleteOrder(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-        await this.orderService.delete(id);
+    @Delete(':id/discount')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remove discount from order' })
+    @ApiResponse({ status: 200, description: 'Discount removed successfully', type: OrderResponseDto })
+    @ApiResponse({ status: 404, description: 'Order not found' })
+    async removeDiscount(
+        @Param('id', ParseUUIDPipe) id: string,
+    ): Promise<OrderResponseDto> {
+        return await this.orderService.removeDiscount(id);
     }
+
+    /**
+     * NOTE: Delete endpoint is disabled for production use.
+     * 
+     * Orders should never be physically deleted because:
+     * - Tax authorities require complete transaction history
+     * - Prevents fraud (staff hiding transactions)
+     * - Cancelled orders provide business insights
+     * - Legal compliance for financial records
+     * 
+     * Use PATCH /orders/:id/status with status "CANCELLED" instead.
+     */
+    // @Delete(':id')
+    // @HttpCode(HttpStatus.NO_CONTENT)
+    // @ApiDeleteOrder()
+    // async deleteOrder(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    //     await this.orderService.delete(id);
+    // }
 }
