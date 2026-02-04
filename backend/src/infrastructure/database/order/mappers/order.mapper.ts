@@ -4,6 +4,12 @@ import { OrderNumber } from '../../../../domain/order';
 import { OrderOrmEntity } from '../entities/order.orm.entity';
 import { OrderItemMapper } from './order-item.mapper';
 
+function toOptionalDate(value: unknown): Date | undefined {
+    if (!value) return undefined;
+    if (!(value instanceof Date)) return undefined;
+    return value;
+}
+
 /**
  * Order Mapper
  * Converts between Order domain entity and OrderOrmEntity
@@ -29,6 +35,9 @@ export class OrderMapper {
         const discountAmount = Money.from(parseFloat(orm.discountAmount), orm.currency);
         const total = Money.from(parseFloat(orm.total), orm.currency);
 
+        const discountAppliedAt = toOptionalDate(orm.discountAppliedAt);
+        const completedAt = toOptionalDate(orm.completedAt);
+
         const order = Order.restore(
             orm.id,
             orderNumber,
@@ -38,11 +47,11 @@ export class OrderMapper {
             subtotal,
             tax,
             discountAmount,
-            orm.discountAppliedAt || undefined,
+            discountAppliedAt,
             total,
             orm.createdAt,
             orm.updatedAt,
-            orm.completedAt || undefined,
+            completedAt,
         );
 
         return order;
