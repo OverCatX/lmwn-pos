@@ -1,4 +1,12 @@
 import { Modal, Descriptions, Table, Tag, Timeline } from 'antd';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  FireOutlined,
+  ShoppingCartOutlined,
+  GiftOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import type { Order, OrderItem, OrderStatus } from '../types/order.types';
@@ -170,48 +178,129 @@ function OrderDetail({ order, visible, onClose }: OrderDetailProps) {
         </Descriptions.Item>
       </Descriptions>
 
-      {/* Order History Timeline */}
+      {/* Order Timeline */}
       <h3 style={{ marginTop: 24, marginBottom: 16 }}>Order Timeline</h3>
       <Timeline
         items={[
           {
-            color: 'green',
+            dot: <ShoppingCartOutlined style={{ fontSize: 16 }} />,
+            color: 'blue',
             children: (
-              <>
-                <strong>Order Created</strong>
-                <br />
-                {dayjs(order.createdAt).format('DD/MM/YYYY HH:mm:ss')}
-                <br />
-                <span style={{ color: '#888' }}>
-                  {order.items.length} items • ฿{parseFloat(order.total).toFixed(2)}
-                </span>
-              </>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Order Created</div>
+                <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                  {dayjs(order.createdAt).format('DD/MM/YYYY HH:mm:ss')}
+                </div>
+                <div style={{ marginTop: 4, fontSize: 12 }}>
+                  {order.items.length} item{order.items.length > 1 ? 's' : ''} • 
+                  Initial total: ฿{parseFloat(order.subtotal).toFixed(2)}
+                </div>
+              </div>
             ),
           },
-          ...(order.status !== 'PENDING'
+          ...(order.discountAppliedAt
             ? [
                 {
-                  color: 'blue',
+                  dot: <GiftOutlined style={{ fontSize: 16 }} />,
+                  color: 'orange',
                   children: (
-                    <>
-                      <strong>Status: {order.status}</strong>
-                      <br />
-                      {dayjs(order.updatedAt).format('DD/MM/YYYY HH:mm:ss')}
-                    </>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Discount Applied</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        {dayjs(order.discountAppliedAt).format('DD/MM/YYYY HH:mm:ss')}
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: 12, color: '#ff4d4f' }}>
+                        -฿{parseFloat(order.discountAmount).toFixed(2)}
+                      </div>
+                    </div>
                   ),
                 },
               ]
             : []),
-          ...(order.completedAt
+          ...(order.status === 'CONFIRMED' || order.status === 'PREPARING' || order.status === 'READY' || order.status === 'COMPLETED'
             ? [
                 {
+                  dot: <CheckCircleOutlined style={{ fontSize: 16 }} />,
+                  color: 'blue',
+                  children: (
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Order Confirmed</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        Sent to kitchen
+                      </div>
+                    </div>
+                  ),
+                },
+              ]
+            : []),
+          ...(order.status === 'PREPARING' || order.status === 'READY' || order.status === 'COMPLETED'
+            ? [
+                {
+                  dot: <FireOutlined style={{ fontSize: 16 }} />,
+                  color: 'orange',
+                  children: (
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Preparing</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        Kitchen is working on this order
+                      </div>
+                    </div>
+                  ),
+                },
+              ]
+            : []),
+          ...(order.status === 'READY' || order.status === 'COMPLETED'
+            ? [
+                {
+                  dot: <ClockCircleOutlined style={{ fontSize: 16 }} />,
+                  color: 'cyan',
+                  children: (
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Ready for Pickup</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        Food is ready to serve
+                      </div>
+                    </div>
+                  ),
+                },
+              ]
+            : []),
+          ...(order.status === 'COMPLETED'
+            ? [
+                {
+                  dot: <CheckCircleOutlined style={{ fontSize: 16 }} />,
                   color: 'green',
                   children: (
-                    <>
-                      <strong>Order Completed</strong>
-                      <br />
-                      {dayjs(order.completedAt).format('DD/MM/YYYY HH:mm:ss')}
-                    </>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Order Completed</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        {order.completedAt && dayjs(order.completedAt).format('DD/MM/YYYY HH:mm:ss')}
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: 12, color: '#52c41a', fontWeight: 600 }}>
+                        Final total: ฿{parseFloat(order.total).toFixed(2)}
+                      </div>
+                      {order.completedAt && (
+                        <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                          Duration: {dayjs(order.completedAt).diff(dayjs(order.createdAt), 'minute')} min
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+              ]
+            : []),
+          ...(order.status === 'CANCELLED'
+            ? [
+                {
+                  dot: <CloseCircleOutlined style={{ fontSize: 16 }} />,
+                  color: 'red',
+                  children: (
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Order Cancelled</div>
+                      <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
+                        {dayjs(order.updatedAt).format('DD/MM/YYYY HH:mm:ss')}
+                      </div>
+                    </div>
                   ),
                 },
               ]
