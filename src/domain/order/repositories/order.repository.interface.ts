@@ -62,6 +62,14 @@ export interface IOrderRepository {
     count(options?: FindOrderOptions): Promise<number>;
 
     /**
+     * Find orders within a date range (for reports)
+     * @param fromDate - Start date
+     * @param toDate - End date
+     * @returns Array of orders within the date range
+     */
+    findByDateRange(fromDate: Date, toDate: Date): Promise<Order[]>;
+
+    /**
      * Delete an order (soft delete recommended for audit trail)
      * @param id - The order ID
      */

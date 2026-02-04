@@ -198,6 +198,26 @@ export class OrderRepository implements IOrderRepository {
   }
 
   /**
+   * Find orders within a date range (for reports)
+   */
+  async findByDateRange(fromDate: Date, toDate: Date): Promise<Order[]> {
+    try {
+      const ormList = await this.ormRepository
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.items', 'items')
+        .where('order.deleted_at IS NULL')
+        .andWhere('order.created_at >= :fromDate', { fromDate })
+        .andWhere('order.created_at <= :toDate', { toDate })
+        .orderBy('order.created_at', 'ASC')
+        .getMany();
+
+      return OrderMapper.toDomainList(ormList);
+    } catch (error) {
+      throw this.handleError(error, 'findByDateRange');
+    }
+  }
+
+  /**
    * Soft delete an order
    */
   async delete(id: string): Promise<void> {

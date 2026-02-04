@@ -10,6 +10,7 @@ import appConfig from './config/app.config';
 // Feature Modules
 import { OrdersModule } from './modules/orders';
 import { ProductsModule } from './modules/products';
+import { ReportsModule } from './modules/reports';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ProductsModule } from './modules/products';
     // Feature Modules
     OrdersModule,
     ProductsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, HealthService],
