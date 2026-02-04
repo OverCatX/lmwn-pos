@@ -1,4 +1,4 @@
-import { OrderNumber } from './order-number.vo';
+import { OrderNumber } from '../order-number.vo';
 
 describe('OrderNumber Value Object', () => {
   it('should generate order number with correct format', () => {

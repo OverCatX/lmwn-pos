@@ -1,13 +1,13 @@
-import { Money } from '../value-objects/money.vo';
-import { OrderNumber } from '../value-objects/order-number.vo';
-import { OrderStatus } from '../enums/order-status.enum';
-import { Product } from './product.entity';
-import { Order } from './order.entity';
+import { Money } from '../../value-objects/money.vo';
+import { OrderNumber } from '../../value-objects/order-number.vo';
+import { OrderStatus } from '../../enums/order-status.enum';
+import { Product } from '../product.entity';
+import { Order } from '../order.entity';
 import {
   InvalidOrderStateException,
   InvalidDiscountException,
   OrderItemNotFoundException,
-} from '../exceptions';
+} from '../../exceptions';
 
 describe('Order Entity', () => {
   const createProduct = (id: string, price: number) =>

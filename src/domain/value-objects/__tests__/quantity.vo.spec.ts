@@ -1,4 +1,4 @@
-import { Quantity } from './quantity.vo';
+import { Quantity } from '../quantity.vo';
 
 describe('Quantity Value Object', () => {
   it('should create quantity with positive integer', () => {

@@ -1,7 +1,7 @@
-import { Money } from '../value-objects/money.vo';
-import { Product } from './product.entity';
-import { OrderItem } from './order-item.entity';
-import { InvalidDiscountException } from '../exceptions';
+import { Money } from '../../value-objects/money.vo';
+import { Product } from '../product.entity';
+import { OrderItem } from '../order-item.entity';
+import { InvalidDiscountException } from '../../exceptions';
 
 describe('OrderItem Entity', () => {
   it('should create order item from product', () => {

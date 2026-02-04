@@ -1,6 +1,6 @@
-import { Money } from '../value-objects/money.vo';
-import { Product } from './product.entity';
-import { InvalidProductException } from '../exceptions';
+import { Money } from '../../value-objects/money.vo';
+import { Product } from '../product.entity';
+import { InvalidProductException } from '../../exceptions';
 
 describe('Product Entity', () => {
   it('should create product with valid data', () => {
