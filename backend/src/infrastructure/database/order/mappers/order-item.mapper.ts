@@ -21,6 +21,7 @@ export class OrderItemMapper {
         return new OrderItem(
             orm.id,
             orm.productId,
+            orm.productName,
             quantity,
             unitPrice,
             discountAmount,
@@ -39,6 +40,7 @@ export class OrderItemMapper {
         orm.id = domain.getId();
         orm.orderId = orderId;
         orm.productId = domain.getProductId();
+        orm.productName = domain.getProductName();
         orm.quantity = domain.getQuantity().toNumber();
         orm.unitPrice = domain.getUnitPrice().toNumber().toFixed(2);
         orm.currency = domain.getUnitPrice().getCurrency();

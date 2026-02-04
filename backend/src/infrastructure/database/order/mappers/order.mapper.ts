@@ -18,31 +18,32 @@ export class OrderMapper {
     static toDomain(orm: OrderOrmEntity): Order {
         const orderNumber = OrderNumber.from(orm.orderNumber);
 
-        // Create order with basic data
-        const order = new Order(
+        // Map items if they exist
+        const items = orm.items && orm.items.length > 0
+            ? OrderItemMapper.toDomainList(orm.items)
+            : [];
+
+        // Restore order from database with all stored values
+        const subtotal = Money.from(parseFloat(orm.subtotal), orm.currency);
+        const tax = Money.from(parseFloat(orm.tax || '0'), orm.currency);
+        const discountAmount = Money.from(parseFloat(orm.discountAmount), orm.currency);
+        const total = Money.from(parseFloat(orm.total), orm.currency);
+
+        const order = Order.restore(
             orm.id,
             orderNumber,
             orm.createdBy,
             orm.status,
+            items,
+            subtotal,
+            tax,
+            discountAmount,
+            orm.discountAppliedAt || undefined,
+            total,
             orm.createdAt,
+            orm.updatedAt,
+            orm.completedAt || undefined,
         );
-
-        // Reconstruct order state from ORM data
-        // Note: We don't add items through addItem() to avoid recalculation
-        // Instead, we set the values directly from stored data
-
-        // If items are loaded (with relations), map them
-        if (orm.items && orm.items.length > 0) {
-            // Items will be added through domain methods if needed
-            // For now, the order aggregates will calculate from stored values
-        }
-
-        // Apply stored discount if any
-        const storedDiscount = Money.from(orm.discountAmount, orm.currency);
-        if (storedDiscount.toNumber() > 0) {
-            // This is the stored discount amount, not applying new discount
-            // The order total is already calculated and stored
-        }
 
         return order;
     }
@@ -59,7 +60,9 @@ export class OrderMapper {
         orm.orderNumber = domain.getOrderNumber().toString();
         orm.status = domain.getStatus();
         orm.subtotal = domain.getSubtotal().toNumber().toFixed(2);
+        orm.tax = domain.getTax().toNumber().toFixed(2);
         orm.discountAmount = domain.getDiscountAmount().toNumber().toFixed(2);
+        orm.discountAppliedAt = domain.getDiscountAppliedAt() || null;
         orm.total = domain.getTotal().toNumber().toFixed(2);
         orm.currency = domain.getSubtotal().getCurrency();
         orm.createdBy = domain.getCreatedBy();

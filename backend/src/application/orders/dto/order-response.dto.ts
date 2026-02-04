@@ -26,13 +26,19 @@ export class OrderResponseDto {
     })
     items: OrderItemResponseDto[];
 
-    @ApiProperty({ description: 'Subtotal before discount', example: 350.0 })
+    @ApiProperty({ description: 'Subtotal before tax and discount', example: 350.0 })
     subtotal: number;
+
+    @ApiProperty({ description: 'Tax amount (7% VAT)', example: 24.5 })
+    tax: number;
 
     @ApiProperty({ description: 'Total discount amount applied', example: 35.0 })
     discountAmount: number;
 
-    @ApiProperty({ description: 'Final total after discount', example: 315.0 })
+    @ApiProperty({ description: 'Timestamp when discount was applied', example: '2026-02-04T10:30:00Z', required: false })
+    discountAppliedAt?: Date | null;
+
+    @ApiProperty({ description: 'Final total (subtotal + tax - discount)', example: 339.5 })
     total: number;
 
     @ApiProperty({ description: 'Currency code', example: 'THB', default: 'THB' })

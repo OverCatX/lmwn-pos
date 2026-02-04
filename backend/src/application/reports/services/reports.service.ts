@@ -65,17 +65,20 @@ export class ReportsService {
                     date: this.formatDate(targetDate),
                     totalOrders: 0,
                     totalSubtotal: 0,
+                    totalTax: 0,
                     totalDiscount: 0,
                     totalRevenue: 0,
                     averageOrderValue: 0,
                     ordersByStatus: [],
                     topProducts: [],
+                    bottomProducts: [],
                     currency: DEFAULT_CURRENCY,
                 };
             }
 
             // Calculate totals with Decimal for precision
             let totalSubtotal = new Decimal(0);
+            let totalTax = new Decimal(0);
             let totalDiscount = new Decimal(0);
             let totalRevenue = new Decimal(0);
 
@@ -87,10 +90,12 @@ export class ReportsService {
 
             for (const order of orders) {
                 const subtotal = order.getSubtotal();
+                const tax = order.getTax();
                 const discount = order.getDiscountAmount();
                 const total = order.getTotal();
 
                 totalSubtotal = totalSubtotal.plus(subtotal.toNumber());
+                totalTax = totalTax.plus(tax.toNumber());
                 totalDiscount = totalDiscount.plus(discount.toNumber());
                 totalRevenue = totalRevenue.plus(total.toNumber());
 
@@ -110,7 +115,7 @@ export class ReportsService {
                         existing.revenue = existing.revenue.plus(itemRevenue);
                     } else {
                         productStats.set(productId, {
-                            name: this.getProductNamePlaceholder(productId),
+                            name: item.getProductName(),
                             quantity: item.getQuantity().toNumber(),
                             revenue: itemRevenue,
                         });
@@ -129,16 +134,18 @@ export class ReportsService {
                 percentage: this.calculatePercentage(count, orders.length),
             }));
 
-            // Build top products (sorted by revenue)
-            const topProducts: TopProductDto[] = Array.from(productStats.entries())
+            // Build product lists
+            const allProducts = Array.from(productStats.entries())
                 .map(([productId, stats]) => ({
                     productId,
                     productName: stats.name,
                     quantitySold: stats.quantity,
                     revenue: this.toDecimal(stats.revenue),
                 }))
-                .sort((a, b) => b.revenue - a.revenue)
-                .slice(0, TOP_PRODUCTS_LIMIT);
+                .sort((a, b) => b.revenue - a.revenue);
+
+            const topProducts: TopProductDto[] = allProducts.slice(0, TOP_PRODUCTS_LIMIT);
+            const bottomProducts: TopProductDto[] = allProducts.slice(-TOP_PRODUCTS_LIMIT).reverse();
 
             const duration = Date.now() - startTime;
             this.logger.log(
@@ -150,11 +157,13 @@ export class ReportsService {
                 date: this.formatDate(targetDate),
                 totalOrders: orders.length,
                 totalSubtotal: this.toDecimal(totalSubtotal),
+                totalTax: this.toDecimal(totalTax),
                 totalDiscount: this.toDecimal(totalDiscount),
                 totalRevenue: this.toDecimal(totalRevenue),
                 averageOrderValue: this.toDecimal(averageOrderValue),
                 ordersByStatus,
                 topProducts,
+                bottomProducts,
                 currency: DEFAULT_CURRENCY,
             };
         } catch (error) {
@@ -381,7 +390,7 @@ export class ReportsService {
                     } else {
                         const category = PLACEHOLDER_CATEGORY;
                         productStats.set(productId, {
-                            name: this.getProductNamePlaceholder(productId),
+                            name: item.getProductName(),
                             category,
                             quantitySold: item.getQuantity().toNumber(),
                             revenue: itemRevenue,

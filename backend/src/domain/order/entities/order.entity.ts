@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Money } from '../../shared/value-objects/money.vo';
 import { OrderNumber } from '../value-objects/order-number.vo';
 import { OrderStatus } from '../enums/order-status.enum';
@@ -12,9 +13,13 @@ import { OrderItemNotFoundException } from '../exceptions/order-item-not-found.e
  * Manages order lifecycle with state machine validation
  */
 export class Order {
+  private static readonly TAX_RATE = 0.07;
+
   private readonly items: OrderItem[] = [];
   private subtotal: Money;
+  private tax: Money;
   private discountAmount: Money;
+  private discountAppliedAt?: Date;
   private total: Money;
   private readonly createdAt: Date;
   private updatedAt: Date;
@@ -39,6 +44,7 @@ export class Order {
   ) {
     const defaultCurrency = 'THB';
     this.subtotal = Money.from(0, defaultCurrency);
+    this.tax = Money.from(0, defaultCurrency);
     this.discountAmount = Money.from(0, defaultCurrency);
     this.total = Money.from(0, defaultCurrency);
     this.createdAt = createdAt || new Date();
@@ -48,6 +54,41 @@ export class Order {
   static create(id: string, createdBy: string, date?: Date): Order {
     const orderNumber = OrderNumber.generate(date);
     return new Order(id, orderNumber, createdBy);
+  }
+
+  /**
+   * Restore order from database with stored values
+   * Used by ORM mapper to reconstitute order state
+   */
+  static restore(
+    id: string,
+    orderNumber: OrderNumber,
+    createdBy: string,
+    status: OrderStatus,
+    items: OrderItem[],
+    subtotal: Money,
+    tax: Money,
+    discountAmount: Money,
+    discountAppliedAt: Date | undefined,
+    total: Money,
+    createdAt: Date,
+    updatedAt: Date,
+    completedAt?: Date,
+  ): Order {
+    const order = new Order(id, orderNumber, createdBy, status, createdAt);
+
+    order.items.push(...items);
+    order.subtotal = subtotal;
+    order.tax = tax;
+    order.discountAmount = discountAmount;
+    order.discountAppliedAt = discountAppliedAt;
+    order.total = total;
+    order.updatedAt = updatedAt;
+    if (completedAt) {
+      order.completedAt = completedAt;
+    }
+
+    return order;
   }
 
   getId(): string {
@@ -70,8 +111,16 @@ export class Order {
     return this.subtotal;
   }
 
+  getTax(): Money {
+    return this.tax;
+  }
+
   getDiscountAmount(): Money {
     return this.discountAmount;
+  }
+
+  getDiscountAppliedAt(): Date | undefined {
+    return this.discountAppliedAt;
   }
 
   getTotal(): Money {
@@ -97,7 +146,7 @@ export class Order {
   addItem(product: Product, quantity: number): void {
     this.assertNotCompleted();
 
-    const itemId = `item-${this.items.length + 1}`;
+    const itemId = uuidv4();
     const item = OrderItem.fromProduct(itemId, product, quantity);
     this.items.push(item);
     this.calculateTotals();
@@ -145,6 +194,15 @@ export class Order {
     }
 
     this.discountAmount = discount;
+    this.discountAppliedAt = new Date();
+    this.calculateTotals();
+    this.touch();
+  }
+
+  removeDiscount(): void {
+    this.assertNotCompleted();
+    this.discountAmount = Money.from(0, this.subtotal.getCurrency());
+    this.discountAppliedAt = undefined;
     this.calculateTotals();
     this.touch();
   }
@@ -167,17 +225,23 @@ export class Order {
   calculateTotals(): void {
     const currency = this.items[0]?.getUnitPrice().getCurrency() ?? this.subtotal.getCurrency();
 
+    // Calculate subtotal from items
     let subtotal = Money.from(0, currency);
     for (const item of this.items) {
       subtotal = subtotal.add(item.calculateSubtotal());
     }
-
     this.subtotal = subtotal;
 
-    if (this.discountAmount.toNumber() === 0) {
-      this.total = this.subtotal;
-    } else {
-      this.total = this.subtotal.subtract(this.discountAmount);
-    }
+    // Calculate net amount after discount (base for tax calculation)
+    const netBeforeTax = this.discountAmount.toNumber() > 0
+      ? this.subtotal.subtract(this.discountAmount)
+      : this.subtotal;
+
+    // Calculate tax (7% VAT) on net amount (Thailand VAT law)
+    const taxAmount = netBeforeTax.toNumber() * Order.TAX_RATE;
+    this.tax = Money.from(taxAmount, currency);
+
+    // Calculate total: (subtotal - discount) + tax
+    this.total = netBeforeTax.add(this.tax);
   }
 }

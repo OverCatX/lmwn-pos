@@ -9,6 +9,7 @@ export class OrderItem {
   constructor(
     private readonly id: string,
     private readonly productId: string,
+    private readonly productName: string,
     private quantity: Quantity,
     private readonly unitPrice: Money,
     private discountAmount: Money = Money.from(0, unitPrice.getCurrency()),
@@ -18,6 +19,7 @@ export class OrderItem {
     return new OrderItem(
       id,
       product.getId(),
+      product.getName(),
       Quantity.from(quantity),
       product.getPrice(),
     );
@@ -29,6 +31,10 @@ export class OrderItem {
 
   getProductId(): string {
     return this.productId;
+  }
+
+  getProductName(): string {
+    return this.productName;
   }
 
   getQuantity(): Quantity {

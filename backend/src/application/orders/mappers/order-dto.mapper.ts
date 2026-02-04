@@ -22,7 +22,9 @@ export class OrderDtoMapper {
             status: order.getStatus(),
             items: order.getItems().map((item) => this.toItemResponseDto(item)),
             subtotal: order.getSubtotal().toNumber(),
+            tax: order.getTax().toNumber(),
             discountAmount: order.getDiscountAmount().toNumber(),
+            discountAppliedAt: order.getDiscountAppliedAt() || null,
             total: order.getTotal().toNumber(),
             currency: order.getSubtotal().getCurrency(),
             createdBy: order.getCreatedBy(),
@@ -39,6 +41,7 @@ export class OrderDtoMapper {
         return {
             id: item.getId(),
             productId: item.getProductId(),
+            productName: item.getProductName(),
             quantity: item.getQuantity().toNumber(),
             unitPrice: item.getUnitPrice().toNumber(),
             subtotal: item.calculateSubtotal().toNumber(),

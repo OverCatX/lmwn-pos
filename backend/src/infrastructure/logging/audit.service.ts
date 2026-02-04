@@ -125,6 +125,21 @@ export class AuditService {
         );
     }
 
+    async logOrderDiscountRemoved(
+        orderId: string,
+        discountAmount: number,
+        changedBy: string,
+    ): Promise<void> {
+        await this.logChange(
+            'order',
+            orderId,
+            'discount_removed',
+            { discountAmount },
+            null,
+            changedBy,
+        );
+    }
+
     /**
      * Log order item added (Type-safe)
      */

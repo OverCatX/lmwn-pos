@@ -27,6 +27,9 @@ export class OrderItemOrmEntity {
     @Column({ type: 'uuid', name: 'product_id' })
     productId: string;
 
+    @Column({ type: 'varchar', length: 255, name: 'product_name' })
+    productName: string;
+
     @Column({ type: 'int' })
     quantity: number;
 

@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Inject,
 } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { Order } from '../../../domain/order';
 import { Money } from '../../../domain/shared';
 import { OrderNumber } from '../../../domain/order';
@@ -188,6 +189,22 @@ export class OrderService {
     }
   }
 
+  async removeDiscount(id: string): Promise<OrderResponseDto> {
+    const order = await this.findOrderById(id);
+
+    const oldDiscountAmount = order.getDiscountAmount().toNumber();
+    order.removeDiscount();
+    const updated = await this.orderRepository.save(order);
+
+    await this.auditService.logOrderDiscountRemoved(
+      order.getId(),
+      oldDiscountAmount,
+      order.getCreatedBy(),
+    );
+
+    return OrderDtoMapper.toResponseDto(updated);
+  }
+
   async findById(id: string): Promise<OrderResponseDto> {
     const order = await this.findOrderById(id);
     return OrderDtoMapper.toResponseDto(order);
@@ -250,10 +267,10 @@ export class OrderService {
 
   /**
    * Generate a UUID
-   * @returns A UUID
+   * @returns A valid UUID v4
    */
   private generateUuid(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return uuidv4();
   }
 
   /**

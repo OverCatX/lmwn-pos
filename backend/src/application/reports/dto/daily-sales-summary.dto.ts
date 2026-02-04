@@ -33,13 +33,16 @@ export class DailySalesSummaryDto {
     @ApiProperty({ description: 'Total number of orders', example: 50 })
     totalOrders: number;
 
-    @ApiProperty({ description: 'Total revenue (before discount)', example: 15000.0 })
+    @ApiProperty({ description: 'Total revenue (before tax and discount)', example: 15000.0 })
     totalSubtotal: number;
+
+    @ApiProperty({ description: 'Total tax amount (7% VAT)', example: 1050.0 })
+    totalTax: number;
 
     @ApiProperty({ description: 'Total discount amount', example: 1500.0 })
     totalDiscount: number;
 
-    @ApiProperty({ description: 'Total revenue (after discount)', example: 13500.0 })
+    @ApiProperty({ description: 'Total revenue (subtotal + tax - discount)', example: 14550.0 })
     totalRevenue: number;
 
     @ApiProperty({ description: 'Average order value', example: 270.0 })
@@ -50,6 +53,9 @@ export class DailySalesSummaryDto {
 
     @ApiProperty({ description: 'Top 5 selling products', type: [TopProductDto] })
     topProducts: TopProductDto[];
+
+    @ApiProperty({ description: 'Bottom 5 underperforming products', type: [TopProductDto] })
+    bottomProducts: TopProductDto[];
 
     @ApiProperty({ description: 'Currency code', example: 'THB', default: 'THB' })
     currency: string;

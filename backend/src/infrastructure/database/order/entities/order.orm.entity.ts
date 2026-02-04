@@ -34,6 +34,9 @@ export class OrderOrmEntity {
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     subtotal: string;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: '0.00' })
+    tax: string;
+
     @Column({
         type: 'decimal',
         precision: 10,
@@ -42,6 +45,9 @@ export class OrderOrmEntity {
         name: 'discount_amount',
     })
     discountAmount: string;
+
+    @Column({ type: 'timestamp', name: 'discount_applied_at', nullable: true })
+    discountAppliedAt: Date | null;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     total: string;
