@@ -5,6 +5,8 @@ import {
     Query,
     HttpCode,
     HttpStatus,
+    UseFilters,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ProductService } from '../../../application/products/services';
@@ -13,28 +15,25 @@ import {
     QueryProductsDto,
     PaginatedProductResponseDto,
 } from '../../../application/products/dto';
+import { DomainExceptionFilter } from '../../../common/filters';
 import {
     ApiGetAllProducts,
     ApiGetProductById,
-} from 'src/common/decorators';
+} from '../../../common/decorators';
 
-/**
- * Products Controller
- * Handles product-related HTTP requests
- */
 @ApiTags('Products')
-@Controller('products')
+@Controller({ path: 'products', version: '1' })
+@UseFilters(DomainExceptionFilter)
 export class ProductsController {
     constructor(private readonly productService: ProductService) { }
-
     /**
-     * Get all products with optional filtering and pagination
+     * Get all products
      * @param query - Query parameters for filtering and pagination
      * @returns Paginated list of products
      */
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiGetAllProducts()
+    @ApiGetAllProducts() //Swagger decoratorr
     async getAllProducts(
         @Query() query: QueryProductsDto,
     ): Promise<PaginatedProductResponseDto> {
@@ -42,14 +41,16 @@ export class ProductsController {
     }
 
     /**
-     * Get a single product by ID
+     * Get product by ID
      * @param id - Product unique identifier
      * @returns Product details
      */
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    @ApiGetProductById()
-    async getProductById(@Param('id') id: string): Promise<ProductResponseDto> {
+    @ApiGetProductById() //Swagger decoratorr
+    async getProductById(
+        @Param('id', ParseUUIDPipe) id: string,
+    ): Promise<ProductResponseDto> {
         return await this.productService.findById(id);
     }
 }

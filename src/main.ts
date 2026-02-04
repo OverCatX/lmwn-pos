@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
@@ -23,14 +23,23 @@ async function bootstrap() {
   const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
   app.setGlobalPrefix(apiPrefix);
 
+  // API Versioning (/api/v1/orders)
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('POS System API')
-    .setDescription('LMWN 2026 POS System - Backend API Documentation')
+    .setDescription(
+      'LMWN 2026 POS System - Backend API Documentation\n\n' +
+      'Base URL: `/api/v1`',
+    )
     .setVersion('1.0')
     .addTag('Orders', 'Order management endpoints')
     .addTag('Products', 'Product management endpoints')
     .addTag('Reports', 'Sales reports and analytics endpoints')
-    .addTag('Health', 'Health check endpoints')
+    // .addTag('Health', 'Health check endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -10,6 +10,7 @@ import {
     HttpCode,
     HttpStatus,
     UseFilters,
+    ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { OrderService } from '../../../application/orders/services';
@@ -27,19 +28,24 @@ import {
     ApiGetAllOrders,
     ApiGetOrderById,
     ApiUpdateOrderStatus,
-    ApiApplyDiscount, ApiDeleteOrder
-} from 'src/common/decorators';
-
+    ApiApplyDiscount,
+    ApiDeleteOrder,
+} from '../../../common/decorators';
 
 @ApiTags('Orders')
-@Controller('orders')
+@Controller({ path: 'orders', version: '1' })
 @UseFilters(DomainExceptionFilter)
 export class OrdersController {
     constructor(private readonly orderService: OrderService) { }
 
+    /**
+     * Create order
+     * @param createOrderDto - Create order data
+     * @returns Order details
+     */
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @ApiCreateOrder() // Swagger decoratorrr
+    @ApiCreateOrder() //Swagger decoratorr
     async createOrder(
         @Body() createOrderDto: CreateOrderDto,
     ): Promise<OrderResponseDto> {
@@ -48,7 +54,7 @@ export class OrdersController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiGetAllOrders() // Swagger decoratorrr
+    @ApiGetAllOrders() //Swagger decoratorr
     async getAllOrders(
         @Query() query: QueryOrdersDto,
     ): Promise<PaginatedOrderResponseDto> {
@@ -57,35 +63,50 @@ export class OrdersController {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    @ApiGetOrderById() // Swagger decoratorrr
-    async getOrderById(@Param('id') id: string): Promise<OrderResponseDto> {
+    @ApiGetOrderById() //Swagger decoratorr
+    async getOrderById(
+        @Param('id', ParseUUIDPipe) id: string,
+    ): Promise<OrderResponseDto> {
         return await this.orderService.findById(id);
     }
 
+    /**
+     * Update order status
+     * @param id - Order unique identifier
+     * @param dto - Update order status data
+     * @returns Order details
+     */
     @Patch(':id/status')
     @HttpCode(HttpStatus.OK)
-    @ApiUpdateOrderStatus() // Swagger decoratorrr
+    @ApiUpdateOrderStatus()  //Swagger decoratorr
     async updateOrderStatus(
-        @Param('id') id: string,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: UpdateOrderStatusDto,
     ): Promise<OrderResponseDto> {
         return await this.orderService.updateOrderStatus(id, dto);
     }
 
+    /**
+     * Apply discount to order
+     * @param id - Order unique identifier
+     * @param dto - Discount data
+     * @returns Order details
+     */
     @Patch(':id/discount')
     @HttpCode(HttpStatus.OK)
-    @ApiApplyDiscount() // Swagger decoratorrr
+    @ApiApplyDiscount() //Swagger decoratorr
     async applyDiscount(
-        @Param('id') id: string,
+        @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: ApplyDiscountDto,
     ): Promise<OrderResponseDto> {
         return await this.orderService.applyDiscount(id, dto);
     }
 
+    //Delete order by ID
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiDeleteOrder() // Swagger decoratorrr
-    async deleteOrder(@Param('id') id: string): Promise<void> {
+    @ApiDeleteOrder() //Swagger decoratorr
+    async deleteOrder(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
         await this.orderService.delete(id);
     }
 }
