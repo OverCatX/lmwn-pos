@@ -96,11 +96,23 @@ export class InitialSchema1733000000000 implements MigrationInterface {
                         scale: 2,
                     },
                     {
+                        name: 'tax',
+                        type: 'decimal',
+                        precision: 10,
+                        scale: 2,
+                        default: '0.00',
+                    },
+                    {
                         name: 'discount_amount',
                         type: 'decimal',
                         precision: 10,
                         scale: 2,
                         default: '0.00',
+                    },
+                    {
+                        name: 'discount_applied_at',
+                        type: 'timestamp',
+                        isNullable: true,
                     },
                     {
                         name: 'total',
@@ -162,6 +174,11 @@ export class InitialSchema1733000000000 implements MigrationInterface {
                     {
                         name: 'product_id',
                         type: 'uuid',
+                    },
+                    {
+                        name: 'product_name',
+                        type: 'varchar',
+                        length: '255',
                     },
                     {
                         name: 'quantity',
