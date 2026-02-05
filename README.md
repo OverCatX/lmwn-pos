@@ -230,6 +230,6 @@ After that, the next most valuable features would be:
 ### API DOCUMENTATION
 
 Swagger UI: `http://localhost:8080/api/docs`  
-Full details: see `backend/README.md`
+Full details: see [Backend README](https://github.com/OverCatX/lmwn-junior-2026/blob/main/backend/README.md)
 
 ---
