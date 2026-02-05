@@ -524,7 +524,7 @@ function ReportsPage() {
 
         {/* Revenue Report */}
         <Card
-          title={`Revenue Report - ${dateRange[0].format('DD MMM')} to ${dateRange[1].format('DD MMM YYYY')} ( 7 Days )`}
+          title={`Revenue Report - ${dateRange[0].format('DD MMM')} to ${dateRange[1].format('DD MMM YYYY')}`}
         >
           <Spin spinning={isLoadingRevenue}>
             {isErrorRevenue ? (

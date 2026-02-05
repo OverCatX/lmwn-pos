@@ -55,6 +55,7 @@ DB_LOGGING=false
 # Application
 PORT=8080
 NODE_ENV=development
+FRONTEND_URL=http://localhost:5173,https://pos.example.com
 ```
 
 ### Commands
