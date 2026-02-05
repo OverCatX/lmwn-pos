@@ -84,6 +84,10 @@ npm run seed
 
 ---
 
+## Database Diagram
+
+![db-diagram](backend/POS-db-diagram.png)
+
 ## API Documentation
 
 ### Base URL
