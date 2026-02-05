@@ -37,7 +37,7 @@ const createApiClient = (): AxiosInstance => {
 
             // Log request in development
             if (import.meta.env.DEV) {
-                console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+                console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
             }
 
             return config;
@@ -53,7 +53,7 @@ const createApiClient = (): AxiosInstance => {
         (response) => {
             // Log response in development
             if (import.meta.env.DEV) {
-                console.log(`✅ API Response: ${response.config.url}`, response.data);
+                console.log(`API Response: ${response.config.url}`, response.data);
             }
 
             return response;
@@ -63,7 +63,7 @@ const createApiClient = (): AxiosInstance => {
             if (error.response) {
                 // Server responded with error status
                 const apiError = error.response.data;
-                console.error('❌ API Error:', {
+                console.error('API Error:', {
                     status: error.response.status,
                     message: apiError.message || error.message,
                     path: apiError.path,
@@ -77,10 +77,10 @@ const createApiClient = (): AxiosInstance => {
                 }
             } else if (error.request) {
                 // Request made but no response
-                console.error('❌ Network Error: No response from server');
+                console.error('Network Error: No response from server');
             } else {
                 // Error setting up request
-                console.error('❌ Request Setup Error:', error.message);
+                console.error('Request Setup Error:', error.message);
             }
 
             return Promise.reject(error);
